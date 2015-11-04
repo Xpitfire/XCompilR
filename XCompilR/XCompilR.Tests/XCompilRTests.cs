@@ -22,8 +22,8 @@ namespace XCompilR.Tests
         public void TestParserGen()
         {
             IParserGen parserGen = new CocoParserGen();
-            AParser aParser = parserGen.CreateParser("JavaScript.atg");
-            Assert.IsNotNull(aParser);
+            AParser parser = parserGen.CreateParser("JavaScript.atg");
+            Assert.IsNotNull(parser);
         }
     }
 }

@@ -11,8 +11,11 @@ namespace XCompilR.Core
 
     public abstract class AParser
     {
+        public dynamic BindingObject { get; set; }
+
         public abstract void InitParser(AScanner scanner);
         public abstract void ReInitParser();
         public abstract void Parse(string fileName);
+
     }
 }

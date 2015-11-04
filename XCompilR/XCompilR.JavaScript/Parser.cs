@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Text;
 using System.Reflection;
+using Roslyn.Compilers;
+using Roslyn.Compilers.CSharp;
 
 
 
@@ -87,7 +89,8 @@ public class Parser : AParser {
 	const bool _T = true;
 	const bool _x = false;
 	const int minErrDist = 2;
-	
+
+    public ExpressionStatementSyntax ExpressionStatementSyntax;
 	public Scanner scanner;
 	public Errors  errors;
 
@@ -411,7 +414,7 @@ bool IsLocalAttrTarget () {
 	}
 
 	void ScriptMember() {
-		Modifiers m = new Modifiers(this); 
+		Modifiers m = new Modifiers(this);
 		string id; 
 		if (IsFieldDecl()) {
 			Expect(36);
@@ -444,7 +447,7 @@ bool IsLocalAttrTarget () {
 			Get();
 			m.Check(Modifier.fields); 
 			Init();
-			/*BindingObject.Ident = t.val;*/
+			BindingObject.Ident = t.val;
 		}
 	}
 
@@ -1168,13 +1171,26 @@ bool IsLocalAttrTarget () {
 
     public override void Parse(string fileName)
     {
+        ExpressionStatementSyntax = Syntax.ExpressionStatement(
+    Syntax.InvocationExpression(
+        Syntax.MemberAccessExpression(
+            SyntaxKind.MemberAccessExpression,
+            Syntax.IdentifierName("Console"),
+            name: Syntax.IdentifierName("WriteLine")),
+        Syntax.ArgumentList(
+            arguments: Syntax.SeparatedList<ArgumentSyntax>(
+                Syntax.Argument(
+                    expression: Syntax.LiteralExpression(
+                        SyntaxKind.StringLiteralExpression,
+                        Syntax.Literal(
+                            text: @"""Goodbye everyone!""",
+                            value: "Goodbye everyone!")))))));
         scanner.Scan(fileName);
 		la = new Token();
 		la.val = "";		
 		Get();
 		JavaScript();
 		Expect(0);
-
 	}
 	
 	static readonly bool[,] set = {

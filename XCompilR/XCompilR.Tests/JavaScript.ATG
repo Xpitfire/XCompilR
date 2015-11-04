@@ -417,8 +417,9 @@ ScriptMember                           (. Modifiers m = new Modifiers(this);
 .
 /*------------------------------------------------------------------------*/
 Field<Modifiers m>
-= ident ["="                           (. m.Check(Modifier.fields); .)
-Init                                   (. /*BindingObject.ident = t.val;*/ .)
+= ident [
+"="                                    (. m.Check(Modifier.fields); .)
+Init                                   
 ]
 .
 /*------------------------------------------------------------------------*/

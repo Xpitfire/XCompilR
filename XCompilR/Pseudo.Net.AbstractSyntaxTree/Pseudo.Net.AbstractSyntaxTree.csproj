@@ -1,0 +1,107 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{A2331453-0898-4750-85EA-77C0A2C22B24}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Pseudo.Net.AbstractSyntaxTree</RootNamespace>
+    <AssemblyName>Pseudo.Net.AbstractSyntaxTree</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Roslyn.Compilers, Version=1.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Roslyn.Compilers.Common.1.2.20906.2\lib\net45\Roslyn.Compilers.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ArgumentList.cs" />
+    <Compile Include="ErrorMessage.cs" />
+    <Compile Include="Exceptions.cs" />
+    <Compile Include="Expressions\ArrayIndexerExpressionNode.cs" />
+    <Compile Include="Expressions\DereferenceMemberExpressionNode.cs" />
+    <Compile Include="Expressions\MemberSelectorExpressionNode.cs" />
+    <Compile Include="Expressions\MethodReferenceExpressionNode.cs" />
+    <Compile Include="Expressions\RangeExpressionNode.cs" />
+    <Compile Include="Expressions\TypeReferenceExpressionNode.cs" />
+    <Compile Include="Expressions\ValueCollectionNode.cs" />
+    <Compile Include="ProgramRootNode.cs" />
+    <Compile Include="Environment.cs" />
+    <Compile Include="Expressions\AddressOfExpressionNode.cs" />
+    <Compile Include="Expressions\BinaryExpressionNode.cs" />
+    <Compile Include="Expressions\InvokeExpressionNode.cs" />
+    <Compile Include="Expressions\ConstExpressionNode.cs" />
+    <Compile Include="Expressions\DereferenceExpressionNode.cs" />
+    <Compile Include="Expressions\ExpressionNode.cs" />
+    <Compile Include="Expressions\NullNode.cs" />
+    <Compile Include="Expressions\VarReferenceExpressionNode.cs" />
+    <Compile Include="Expressions\UnaryExpressionNode.cs" />
+    <Compile Include="MethodDefinition\MethodBuilder.cs" />
+    <Compile Include="MethodDefinition\MethodDefinitionNode.cs" />
+    <Compile Include="Node.cs" />
+    <Compile Include="Statements\AssignStatementNode.cs" />
+    <Compile Include="Statements\BlockStatementNode.cs" />
+    <Compile Include="Statements\BreakStatement.cs" />
+    <Compile Include="Statements\InvokeStatement.cs" />
+    <Compile Include="Statements\CaseStatement.cs" />
+    <Compile Include="Statements\ForStatement.cs" />
+    <Compile Include="Statements\HaltStatement.cs" />
+    <Compile Include="Statements\IfStatement.cs" />
+    <Compile Include="Statements\RepeatStatement.cs" />
+    <Compile Include="Statements\ReturnStatement.cs" />
+    <Compile Include="Statements\StatementNode.cs" />
+    <Compile Include="Statements\WhileStatement.cs" />
+    <Compile Include="TypeRepository.cs" />
+    <Compile Include="Types\ArrayTypeNode.cs" />
+    <Compile Include="Types\BaseTypeNode.cs" />
+    <Compile Include="Types\ClassTypeNode.cs" />
+    <Compile Include="Types\PointerTypeNode.cs" />
+    <Compile Include="Types\StructTypeNode.cs" />
+    <Compile Include="Types\TypeNode.cs" />
+    <Compile Include="Types\UndefinedTypeNode.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

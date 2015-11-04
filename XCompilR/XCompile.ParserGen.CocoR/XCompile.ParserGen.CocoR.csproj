@@ -44,6 +44,14 @@
       <HintPath>..\packages\PostSharp.Patterns.Diagnostics.4.1.28\lib\net40\PostSharp.Patterns.Diagnostics.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="Roslyn.Compilers, Version=1.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Roslyn.Compilers.Common.1.2.20906.2\lib\net45\Roslyn.Compilers.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Roslyn.Compilers.CSharp, Version=1.2.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Roslyn.Compilers.CSharp.1.2.20906.2\lib\net45\Roslyn.Compilers.CSharp.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -64,7 +72,6 @@
     <Compile Include="CocoParserGen.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Coco.atg" />
     <None Include="JKU.Coco\Parser.frame" />
     <None Include="JKU.Coco\Scanner.frame" />
     <None Include="packages.config" />

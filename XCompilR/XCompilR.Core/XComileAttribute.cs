@@ -35,10 +35,10 @@ namespace XCompilR.Core
             {
                 throw new XCompileException("Invalid base class inheritance! Class does not derive from CrossCompileObject!");
             }
-            
-            var parser = Language.Parser;
-            parser.Parse(Source);
 
+            var parser = Language.Parser;
+            parser.BindingObject = bindingObj;
+            parser.Parse(Source);
 
         }
     }

@@ -78,9 +78,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Coco.atg">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
     <None Include="JavaScript.ATG">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

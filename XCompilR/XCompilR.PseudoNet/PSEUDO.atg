@@ -1,0 +1,708 @@
+﻿/* Pseudo.Net -- master thesis by thomas prückl 2013            */
+/* XCompilR   -- bachelor thesis by marius-constantin dinu 2015 */
+/* University of Applied Sciences Upper Austria                 */
+using System.Collections;
+using System.Collections.Generic;
+using Pseudo.Net;
+using Pseudo.Net.AbstractSyntaxTree;
+using Pseudo.Net.Exceptions;
+using System.Linq;
+using System.Globalization;
+using System.Text;
+using System.Reflection;
+using SearchScope = Pseudo.Net.Frontend.SyntaxTreeBuilder.SearchScope;
+
+COMPILER PSEUDO
+
+// Because <> are not allowed in the Grammar
+class StringList : List<string> {}
+
+public void SetSyntaxTreeBuilder(SyntaxTreeBuilder stb){
+  this.pp = stb;
+}
+
+private int GetIntegerValue(string identifier){
+  ConstExpressionNode v = pp.GetConstVariable(identifier);
+  if( v is IntegerNode )
+    return ((IntegerNode)v).Value;
+  else
+    SemErr(ErrorCode.INVALID_TYPE, 
+      String.Format("{0} is not an integer", identifier));
+
+  return -1;
+}
+
+private ClassTypeNode EnterClassScope(string className){
+  TypeNode type = pp.FindType(className);
+  if (type is ClassTypeNode) {
+      ClassTypeNode classType = type as ClassTypeNode;
+      pp.EnterScope(classType.Environment);
+      return classType;
+  } else {
+    throw new SemanticErrorException(ErrorCode.NOT_A_CLASS, 
+      String.Format("'{0}' must be a class", className));
+  }
+}
+
+private void CheckName(string expected, string actual, string name) {
+  if(!expected.Equals(actual))
+    SemErr(ErrorCode.METHOD_NAME_NOT_EQUAL, 
+      String.Format("{0} name should must be '{1}', not '{2}'", 
+        name, expected, actual));
+}
+
+private void CheckMethodSignature(MethodDefinitionNode m1, MethodDefinitionNode m2) {
+  if(!m1.EqualHeader(m2))
+    SemErr(ErrorCode.METHOD_SIGNATURE_NOT_EQUAL, String.Format(
+      "different method signature between declaration and definition at '{0}'", 
+      m1.FullName));
+}
+
+private SearchScope GetClassScope() {
+  SearchScope scope = SearchScope.GLOBAL;
+  if(pp.InClassScope())
+    scope = SearchScope.THIS_CLASS;
+  else
+    SemErr(ErrorCode.THIS_KEYWORD_NOT_ALLOWED, 
+      "'this' is only allowed within a class");
+  return scope;
+}
+
+private SyntaxTreeBuilder pp{get; set;}
+private bool isLValue = false;
+
+
+// Return the n-th token after the current lookahead token
+Token Peek (int n) {
+    scanner.ResetPeek();
+    Token x = la;
+    while (n > 0) { x = scanner.Peek(); n--; }
+    return x;
+}
+
+
+//---------- conflict resolvers ------------------------------
+private bool IsMethod() {
+    return Peek(1).kind == _DOT;
+}
+
+private bool IsVarSpec() {
+  Token x = Peek(1);
+  return (x.kind == _COMMA || x.kind == _COLON);
+}
+
+private bool IsTypeSpec() {
+  Token x = Peek(1);
+  return (x.kind == _DEFINE);
+}
+
+private bool IsCall() {
+  return la.kind==_LEFTPAR;
+}
+
+private bool IsBaseClassSelector(string baseClassName) {
+  return la.kind==_DOT && 
+         pp.InClassScope() && 
+         pp.GetSubClass(baseClassName)!=null;
+}
+
+private ExpressionNode GetClassMember(string className, string memberName) {
+  ExpressionNode e;
+  var env = pp.GetSubClass(className);
+  if(IsCall())
+    e = env.Find(memberName, false);
+  else
+    e = env.FindVariable(memberName, false);
+	
+	if(!e.IsPublic)
+    SemErr(ErrorCode.MEMBER_IS_PRIVATE, 
+      "no public member '" + memberName +"' in '" + className + "'");
+    
+  return e;
+}
+
+private ExpressionNode GetExpression(string name, SearchScope scope) {
+  ExpressionNode e;
+  if(IsCall())
+    e = pp.Find(name, scope);
+  else if(pp.ExistsType(name))
+    e = new TypeReferenceExpressionNode(pp.FindType(name));
+  else
+    e = pp.FindVariable(name, scope);
+
+  return e;
+}
+
+private bool NextTokenIsMembersOf(ExpressionNode n){
+  if(la.kind != _IDENT)
+    return false;
+
+  if(isLValue)
+    return true;
+
+  if(n.GetTypeNode() is PointerTypeNode)  {
+    PointerTypeNode p = n.GetTypeNode() as PointerTypeNode;
+    Token x = Peek(1);
+    switch(x.kind)
+    {
+      case _ASSIGN:
+      case _LEFTPAR:
+      case _PTR:
+      {
+        bool isMember = p.PointsTo.HasMember(la.val);
+        bool isVariable = pp.Exists(la.val);
+        if(isVariable && !isMember)
+          return false;
+        else
+        if(!isVariable && isMember)
+          return true;
+        else
+          throw new SemanticErrorException(ErrorCode.AMBIGUOUS_STATEMENT, 
+            "Use a semicolon to specify the seperation of the statments");
+      }
+
+      default:
+        return true;
+    }
+  }
+  return false;
+}
+
+CHARACTERS
+  letter    = 'A'..'Z' + 'a'..'z' + '_'.
+  digit     = '0'..'9'.
+  notQuote  = ANY - '"' - "\r\n".
+  notApo    = ANY - '\'' - "\r\n".
+  tab       = '\t'.
+  cr        = '\r'.
+  lf        = '\n'.
+
+
+TOKENS	
+  IDENT     = letter {letter | digit}.
+  REAL      = [digit {digit}] '.' digit {digit}.
+  INTEGER   = digit {digit}.
+  STRING    = '"' {notQuote} '"'.
+  CHAR      = '\'' notApo '\''. 
+
+  // operators and special characters needed in LL(1) resolvers
+  COLON     = ":".
+  SEMICOLON = ";".
+  COMMA     = ",".
+  DEFINE    = "=".
+  ASSIGN   = ":=".
+  DOT	      = ".".
+  LEFTPAR   = "(".
+  RIGHTPAR  = ")".
+  ENDKW     = "end".
+  PTR       = "->".
+
+
+COMMENTS FROM "/*" TO "*/"
+COMMENTS FROM "(*" TO "*)"
+COMMENTS FROM "--" TO lf
+
+IGNORE tab + cr + lf
+
+PRODUCTIONS
+
+// Pseudocode Grammar
+PSEUDO =                      (. string name;
+                                 StatementNode n;                           .)                            
+"program" Ident<out name>     (. pp.Name = name;                            .)
+{ ConstDecl 
+| TypeDecl
+| VarDecl<true>
+| IF(IsMethod()) MethodDef
+| AlgDef   
+}                             (. pp.EnterEntryPointScope();                 .) 
+Block<out n>                  (. pp.MainBody = n;
+                                 pp.LeaveScope();                           .)
+.
+
+TypeDecl =
+"type" TypeSpec 
+{ IF(IsTypeSpec()) TypeSpec }.
+
+TypeSpec =                    (. string name, aliasto; 
+                                 TypeNode tn;                               .)
+Ident<out name> "="
+( Type<out aliasto>           (. pp.AddAliasType(name, aliasto);            .)
+| ArrayType<out tn>           (. pp.AddType(name, tn);                      .)
+| CompoundType<name, out tn>  (. pp.AddType(name, tn);                      .)
+| ClassType<name, out tn>     (. pp.AddType(name, tn);                      .)
+) [";"].
+
+Type<out string typename> =   (. typename = ""; string name = "";           .)
+["->"                         (. typename += "->";                          .)
+] Ident<out name>             (. typename += name;                          .)
+.
+
+ArrayType<out TypeNode tn> =  (. ArrayTypeNode atn = new ArrayTypeNode();
+                                 string typename; tn = atn;                 .)
+"array" "["
+ArraySpec<ref atn> {          (. ArrayTypeNode tmp = new ArrayTypeNode();
+                                 atn.Typeof = tmp;
+                                 atn = tmp;                                 .)
+"," ArraySpec<ref atn> } "]"
+"of" Type<out typename>       (. atn.Typeof = pp.FindOrCreateType(typename);.)
+.
+
+ArraySpec<ref ArrayTypeNode atn> =
+                              (. int imin = -1, imax = -1;
+                                 string smin = "", smax = "";               .)
+( Integer<out imin>
+| Ident<out smin>             (. imin = GetIntegerValue(smin);              .)
+)
+[":"
+  (Integer<out imax>
+  | Ident<out smax>           (. imax = GetIntegerValue(smax);              .)
+  )]                          (. if(imax>0) atn.SetDimension(imin, imax);
+                                 else       atn.SetDimension(imin);         .)
+.
+
+CompoundType<string name, out TypeNode tn> =
+                              (. StructTypeNode ctn =
+                                  new StructTypeNode(
+                                    pp.EnterScope(true), name);             .)
+"compound" CompoundSpec<ref ctn>
+{ CompoundSpec<ref ctn> }
+"end"                         (. tn = ctn;
+                                 pp.LeaveScope();                           .)
+.
+
+CompoundSpec<ref StructTypeNode ctn> =
+                              (. StringList varnames; TypeNode tn = null;   .)
+IdentList<out varnames> ":"
+(                             (. string typename;                           .)
+  Type<out typename>          (. tn = pp.FindOrCreateType(typename);        .)
+| ArrayType<out tn>
+| CompoundType<varnames[0], out tn>
+) [";"]                       (. foreach(string name in varnames)
+                                   pp.AddVariable(name, tn, false, true);   .)
+.
+
+ConstDecl =
+"const" ConstSpec
+{ IF(IsTypeSpec()) ConstSpec }
+.
+
+ConstSpec =                   (. string name;
+                                 int ival;
+                                 double rval;
+                                 char cval;                                 .)
+Ident<out name> "="
+( Integer<out ival>           (. pp.AddConstVariable(name, ival);           .)
+| Real<out rval>              (. pp.AddConstVariable(name, rval);           .)
+| Char<out cval>              (. pp.AddConstVariable(name, cval);           .)
+) [";"].
+
+
+VarDecl<bool isStatic> =
+["static"                     (. isStatic = true;                           .)
+] "var" VarSpec<isStatic>
+{ IF(IsVarSpec())
+    VarSpec<isStatic, true>
+}
+.
+
+VarSpec<bool isStatic, bool isPublic=true> =
+                              (. StringList varnames;
+                                 TypeNode tn = null;
+                                 ExpressionNode value = null;               .)
+IdentList<out varnames>
+WEAK ":" (                    (. string typename;                           .)
+  Type<out typename>          (. tn = pp.FindOrCreateType(typename);        .)
+    [":=" Expr<out value>]
+| ArrayType<out tn>
+| CompoundType<null, out tn>
+) [";"]                       (. foreach(string name in varnames)
+                                   pp.AddVariable(name,
+                                                  tn,
+                                                  isStatic,
+                                                  isPublic,
+                                                  value);                   .)
+.
+
+ClassType<string name, out TypeNode tn> =
+                              (. string baseClassName = "";
+                                 bool isAbstract = false;
+                                 ClassTypeNode baseClass = null;            .)
+["abstract"                   (. isAbstract = true;.)
+]"class"
+["based" "on"
+  Ident<out baseClassName>    (. baseClass = EnterClassScope(baseClassName);.)
+]                             (. tn = new ClassTypeNode(pp.EnterScope(true),
+                                                        name,
+                                                        baseClass,
+                                                        isAbstract);        .)
+{                             (. bool isVisible = true;                     .)
+  ( ConstDecl |
+    (["public" | "private"    (. isVisible = false;                         .)
+     ]
+     (IF(IsVarSpec())
+       VarSpec<false, isVisible>
+     | MethodDecl<isVisible>)
+    )
+  )
+}                             (. pp.LeaveScope(); // leave current class
+                                 if(baseClass!=null) // leave base class
+                                   pp.LeaveScope();                         .)
+"end".
+
+MethodDecl<bool isPublic> =
+                              (. MethodDefinitionNode m =
+                                   new MethodDefinitionNode(pp.EnterScope()); .)
+["abstract"                   (. m.IsAbstract = true;                       .)
+|"override"                   (. m.IsOverride = true;                       .)
+]
+AlgHead<ref m>                (. pp.LeaveScope();
+                                 m.IsPublic = isPublic;
+                                 pp.AddFunction(m);                         .)
+.
+
+MethodDef =                   (. string className, funcname, className2;
+                                 MethodDefinitionNode m;                      .)
+Ident<out className> "."      (. EnterClassScope(className);                .)
+MethodeDefBody<out m>
+Ident<out className2> "."
+Ident<out funcname>           (. CheckName(className, className2, "class");
+                                 CheckName(m.Name, funcname, "method");
+                                 pp.LeaveScope();                           .)
+.
+
+MethodeDefBody<out MethodDefinitionNode m> =
+                              (. MethodDefinitionNode m2 =
+                                   new MethodDefinitionNode(pp.EnterScope());
+                                 StatementNode block;                       .)
+AlgHead<ref m2>               (. pp.LeaveScope();
+                                 m = pp.FindFunctionDefinition(m2.Name);
+                                 CheckMethodSignature(m, m2);
+                                 pp.EnterScope(m.Environment);              .)
+[ConstDecl]
+{VarDecl<false>}
+Block<out block>              (. m.Body = block;
+                                 pp.LeaveScope();                           .)
+.
+
+AlgDef =                      (. string funcname;
+                                 StatementNode block;
+                                 MethodDefinitionNode m =
+                                   new MethodDefinitionNode(pp.EnterScope()); .)
+AlgHead<ref m>
+[ConstDecl]
+{VarDecl<false>}
+Block<out block>              (. m.Body = block;                            .)
+Ident<out funcname>           (. CheckName(m.Name, funcname, "function");
+                                 pp.LeaveScope();
+                                 m.IsStatic = true;
+                                 pp.AddFunction(m);                         .)
+.
+
+AlgHead<ref MethodDefinitionNode m> =
+                              (. string funcname;
+                                 string returntypename = "void";            .)
+Ident<out funcname> "(" {     (. ArgumentDirection d;
+                                 string parname, partype;                   .)
+ParamKind<out d>
+Ident<out parname> ":"
+Type<out partype>             (. m.AddParameter(d, parname,
+                                   pp.FindOrCreateType(partype));           .)
+} ")"
+[":" Type<out returntypename>]
+[";"]                         (. m.Name = funcname;
+                                 m.ReturnType =
+                                   pp.FindOrCreateType(returntypename);     .)
+.
+
+ParIn  = (WEAK "in"  | "↓" ).
+ParOut = (WEAK "out" | "↑" ).
+ParIo  = (WEAK "io"  | "↓↑").
+
+ParamKind<out ArgumentDirection d> =
+                              (. d = ArgumentDirection.IN;                  .)
+( ParIn
+| ParOut                      (. d = ArgumentDirection.OUT;                 .)
+| ParIo                       (. d = ArgumentDirection.IO;                  .)
+).
+
+Block<out StatementNode b> =
+SYNC "begin"
+StatList<out b>
+"end".
+
+StatList<out StatementNode s> =
+                              (. BlockStatementNode b = 
+							                       new BlockStatementNode();
+                                 StatementNode s1;                          .)
+{Stat<out s1>                 (. b.AddStatement(s1);                        .)
+}[ReturnStat<out s1>          (. b.AddStatement(s1);                        .)
+[";"] ]                       (. s = b;                                     .)
+.
+
+Stat<out StatementNode s> =   (. s = null;
+                                 ExpressionNode lval, rval;
+                                 ArgumentList al;                           .)
+(                             (. isLValue = true;                           .)
+  Qualifier<out lval>         (. isLValue = false;                          .)
+    ( Assign<out rval>        (. s = new AssignStatementNode(lval, rval);   .)
+    | Call<out al>            (. s = new InvokeStatementNode(
+                                       new InvokeExpressionNode(lval, al)); .)
+    )
+  | SYNC
+  ( IfStat<out s>
+  | WhileStat<out s>
+  | RepeatStat<out s>
+  | ForStat<out s>
+  | BreakStat<out s>
+  | HaltStat<out s>
+  | Case<out s>
+  | Block<out s>
+  )
+) [";"].
+
+Assign<out ExpressionNode e> =
+":=" Expr<out e>.
+
+Call<out ArgumentList al> =
+                              (. ArgumentDirection d;
+                                 ExpressionNode e;
+                                 al = new ArgumentList();                   .)
+"(" {
+  ParamKind<out d>
+  Expr<out e>                 (. al.Add(d, e);                              .)
+} ")".
+
+IfStat<out StatementNode s> = (. ExpressionNode e;
+                                 StatementNode b;
+                                 IfStatement ifstat;                        .)
+"if" Expr<out e>
+WEAK "then"
+StatList<out b>               (. ifstat = new IfStatement(e, b);            .)
+["else" StatList<out b>       (. ifstat.ElseStat = b;                       .)
+] "end"                       (. s = ifstat;                                .)
+.
+
+Case<out StatementNode s> =   (. ExpressionNode e;
+                                 StatementNode stmt;                        .)
+"case" Expr<out e> "of"       (. CaseStatement caseStmt =
+                                   new CaseStatement(e);
+                                 s = caseStmt;                              .)
+{"|" CaseLabelExprList<out e>
+ ":" StatList<out stmt>       (. caseStmt.AddCase(e, stmt);                 .)
+}
+["otherwise"
+ ":" StatList<out stmt>       (. caseStmt.SetDefaultStatement(stmt);        .)
+] "end".
+
+CaseLabelExprList<out ExpressionNode e> =
+                              (. ExpressionNode e2;                         .)
+CaseLabelExpr<out e> [        (. ValueCollectionNode c =
+                                   new ValueCollectionNode();
+                                 c.AddValues(e);
+                                 e = c;                                     .)
+ "," CaseLabelExpr<out e2>    (. c.AddValues(e2);                           .)
+{"," CaseLabelExpr<out e2>    (. c.AddValues(e2);                           .)
+}].
+
+CaseLabelExpr<out ExpressionNode e> =
+Expr<out e> [                 (. ExpressionNode e2;                         .)
+".." Expr<out e2>             (. e = new RangeExpressionNode(e, e2);        .)
+].
+
+WhileStat<out StatementNode b> =
+                              (. ExpressionNode e;
+                                 StatementNode s;                           .)
+"while" Expr<out e> "do"
+StatList<out s>               (. b = new WhileStatement(e, s);              .)
+"end".
+
+ForStat<out StatementNode b> =(. string name;
+                                 StatementNode s;
+                                 ExpressionNode start, end;
+                                 bool down = false;                         .)
+"for" Ident<out name>
+":=" Expr<out start>
+("to"|"downto"                (. down = true; .)
+) Expr<out end> "do"
+  StatList<out s> "end"       (. b = new ForStatement(
+                                           pp.FindVariable(name),
+                                           start, end, s, down);            .)
+.
+
+RepeatStat<out StatementNode b> =
+                              (. ExpressionNode e;
+                                 StatementNode s;                           .)
+"repeat"
+StatList<out s>
+"until" Expr<out e>           (. b = new RepeatStatement(e, s);             .)
+.
+
+BreakStat<out StatementNode s> =
+"break"                       (. s = new BreakStatement();                  .)
+.
+
+HaltStat<out StatementNode s> =
+"halt"                        (. s = new HaltStatement();                   .)
+.
+
+ReturnStat<out StatementNode s> =
+                              (. ExpressionNode e = null;                   .)
+"return" [Expr<out e>]        (. s = new ReturnStatement(e);                .)
+.
+
+Expr<out ExpressionNode e> =  (. ExpressionNode e2;                         .)
+AndExpr<out e>
+{"or" AndExpr<out e2>         (. e = new BinaryExpressionNode(
+                                       BinaryExpressionNode.Operator.OR,
+                                       e,
+                                       e2);                                 .)
+}.
+
+AndExpr<out ExpressionNode e> =
+                              (. ExpressionNode e2;                         .)
+RelExpr<out e>
+{"and" RelExpr<out e2>        (. e = new BinaryExpressionNode(
+                                       BinaryExpressionNode.Operator.AND,
+                                       e,
+                                       e2);                                 .)
+}.
+
+RelExpr<out ExpressionNode e> =
+                              (. ExpressionNode e2;
+                                 BinaryExpressionNode.Operator op =
+                                   BinaryExpressionNode.Operator.UNDEF;     .)
+SimpleExpr<out e>
+[("="                         (. op = BinaryExpressionNode.Operator.EQ;     .)
+| ("!=" | "≠")                (. op = BinaryExpressionNode.Operator.NE;     .)
+| "<"                         (. op = BinaryExpressionNode.Operator.LT;     .)
+| ("<=" | "≤")                (. op = BinaryExpressionNode.Operator.LE;     .)
+| ">"                         (. op = BinaryExpressionNode.Operator.GT;     .)
+| (">=" | "≥")                (. op = BinaryExpressionNode.Operator.GE;     .)
+| "isA"                       (. op = BinaryExpressionNode.Operator.ISA;    .)
+) SimpleExpr<out e2>          (. e = new BinaryExpressionNode(op, e, e2);   .)
+].
+
+SimpleExpr<out ExpressionNode e> =
+                              (. ExpressionNode e2;
+                                 BinaryExpressionNode.Operator op =
+                                   BinaryExpressionNode.Operator.UNDEF;     .)
+Term<out e>
+{("+"                         (. op = BinaryExpressionNode.Operator.PLUS;   .)
+| "-"                         (. op = BinaryExpressionNode.Operator.MINUS;  .)
+) Term<out e2>                (. e = new BinaryExpressionNode(op, e, e2);   .)
+}.
+
+NestedExpr<out ExpressionNode e> = 
+"(" Expr<out e> ")".
+
+Term<out ExpressionNode e> =  (. ExpressionNode e2;
+                                 BinaryExpressionNode.Operator op =
+                                   BinaryExpressionNode.Operator.UNDEF;     .)
+NotFact<out e>
+{("*"                         (. op = BinaryExpressionNode.Operator.MULT;   .)
+| ("/" | "div")               (. op = BinaryExpressionNode.Operator.DIV;    .)
+| ("%" | "mod")               (. op = BinaryExpressionNode.Operator.MOD;    .)
+) NotFact<out e2>             (. e = new BinaryExpressionNode(op, e, e2);   .)
+}.
+
+NotFact<out ExpressionNode e> =
+                              (. ExpressionNode e2;
+                                 UnaryExpressionNode.Operator op =
+                                   UnaryExpressionNode.Operator.UNDEF;      .)
+["not"                        (. op = UnaryExpressionNode.Operator.NOT;     .)
+|"+"                          (. op = UnaryExpressionNode.Operator.PLUS;    .)
+|"-"                          (. op = UnaryExpressionNode.Operator.MINUS;   .)
+] Fact<out e2>                (. if(op!=UnaryExpressionNode.Operator.UNDEF)
+                                   e = new UnaryExpressionNode(op, e2);
+                                 else
+                                   e = e2;                                  .)
+.
+
+Fact<out ExpressionNode e> =  (. e = null;
+                                 ArgumentList al;
+                                 int ival;
+                                 double rval;
+                                 string sval;
+                                 char cval;                                 .)
+(
+  Qualifier<out e>
+  [Call<out al>               (. e = new InvokeExpressionNode(e, al);       .)
+  ]
+| NewStat<out e>
+| AddrOfStat<out e>
+| Integer<out ival>           (. e = new IntegerNode(ival);                 .)
+| Real<out rval>              (. e = new RealNode(rval);                    .)
+| StringLiteral<out sval>     (. e = new StringNode(sval);                  .)
+| Char<out cval>              (. e = new CharNode(cval);                    .)
+| "false"                     (. e = new BoolNode(false);                   .)
+| "true"                      (. e = new BoolNode(true);                    .)
+| "null"                      (. e = new NullNode();                        .)
+| NestedExpr<out e>
+).
+
+NewStat<out ExpressionNode e> =
+                              (. string tn;
+                                 var al = new ArgumentList();
+                                 ExpressionNode par;                        .)
+"New" "("
+ ParIn Type<out tn>           (. al.Add(ArgumentDirection.IN,
+                                   new TypeReferenceExpressionNode(
+                                     pp.FindType(tn)));                     .)
+{ParIn Expr<out par>          (. al.Add(ArgumentDirection.IN, par);         .)
+} ")"                         (. e = new InvokeExpressionNode(
+                                   pp.FindFunction("New"), al);             .)
+.
+
+AddrOfStat<out ExpressionNode e> =
+"AddrOf" "("
+"in" Qualifier<out e>  (. e = new AddressOfExpressionNode(e);        .)
+")".
+
+Qualifier<out ExpressionNode e> =
+                              (. string classOrIdentName, name;
+                                 ExpressionNode index;
+                                 e = null;
+                                 SearchScope scope = SearchScope.GLOBAL;    .)
+["this"                       (. scope = GetClassScope();                   .)
+ "->"]
+Ident<out classOrIdentName>
+( IF(IsBaseClassSelector(classOrIdentName))
+"." Ident<out name>           (. e = GetClassMember(classOrIdentName, name);.)
+|                             (. e = GetExpression(classOrIdentName, scope);.)
+)
+{
+  "->" (
+  IF(NextTokenIsMembersOf(e))
+    Ident<out name>     (. e = new DereferenceMemberExpressionNode(e, name);.)
+  |                     (. e = new DereferenceExpressionNode(e);            .)
+  )
+| "." Ident<out name>   (. e = new MemberSelectorExpressionNode(e, name);   .)
+| "[" Expr<out index>   (. e = new ArrayIndexerExpressionNode(e, index);    .)
+  {"," Expr<out index>  (. e = new ArrayIndexerExpressionNode(e, index);    .)
+  } "]"
+}
+.
+
+IdentList<out StringList v> = (. v = new StringList();
+                                 string name;                               .)
+Ident<out name>               (. v.Add(name);                               .)
+{"," Ident<out name>          (. v.Add(name);                               .)
+}.
+
+Ident<out string name> =
+IDENT                         (. name = t.val;                              .)
+.
+Integer<out int ival> =
+INTEGER                       (. ival = Convert.ToInt32(t.val);             .)
+.
+StringLiteral<out string s> =
+STRING                        (. s = t.val.Substring(1, t.val.Length-2);    .)
+.
+Char<out char c> = CHAR       (. c = t.val[1];                              .)
+.
+Real<out double rval> = REAL  (. rval = Double.Parse(t.val,
+                                          CultureInfo.InvariantCulture);    .)
+.
+
+END PSEUDO.
