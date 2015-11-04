@@ -11,7 +11,13 @@ namespace XCompilR.JavaScript
     {
         public override string LanguageName { get; } = "JavaScript";
         public override string AssemblyName { get; } = "XCompilR.JavaScript";
-        public override string ParserTypeName { get; } = "XCompilR.JavaScript.Parser";
-        public override string ScannerTypeName { get; } = "XCompilR.JavaScript.Scanner";
+        public override AParser Parser { get; }
+
+        public BindingLanguage()
+        {
+            var p = new Parser();
+            p.InitParser(new Scanner());
+            Parser = p;
+        }
     }
 }

@@ -41,6 +41,10 @@
       <HintPath>..\packages\PostSharp.4.1.28\lib\net35-client\PostSharp.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="PostSharp.Patterns.Diagnostics, Version=4.1.28.0, Culture=neutral, PublicKeyToken=e7f631e6ce13f078, processorArchitecture=MSIL">
+      <HintPath>..\packages\PostSharp.Patterns.Diagnostics.4.1.28\lib\net40\PostSharp.Patterns.Diagnostics.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <Choose>
@@ -56,10 +60,14 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="XCompilRCoreTest.cs" />
+    <Compile Include="XCompilRTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\XCompile.ParserGen.CocoR\XCompile.ParserGen.CocoR.csproj">
+      <Project>{c5f38993-86b7-4454-a803-b909b73128af}</Project>
+      <Name>XCompile.ParserGen.CocoR</Name>
+    </ProjectReference>
     <ProjectReference Include="..\XCompilR.Core\XCompilR.Core.csproj">
       <Project>{A07DCC98-877E-476C-A682-B1BC6F1F416E}</Project>
       <Name>XCompilR.Core</Name>
@@ -70,7 +78,20 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Coco.atg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="JavaScript.ATG">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
+    <None Include="Parser.frame">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="Scanner.frame">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="XCompilR.Tests.psproj" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="test.js">

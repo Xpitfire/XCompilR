@@ -16,7 +16,6 @@ namespace XCompilR.Core
     {
         public abstract string LanguageName { get; }
         public abstract string AssemblyName { get; }
-        public abstract string ParserTypeName { get; }
-        public abstract string ScannerTypeName { get; }
+        public abstract AParser Parser { get; }
     }
 }

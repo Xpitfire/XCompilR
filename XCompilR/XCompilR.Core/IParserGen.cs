@@ -6,10 +6,8 @@ using System.Threading.Tasks;
 
 namespace XCompilR.Core
 {
-    public interface IParser
+    public interface IParserGen
     {
-        void BindingObject(dynamic obj);
-
-        void Parse();
+        AParser CreateParser(string grammarFile);
     }
 }

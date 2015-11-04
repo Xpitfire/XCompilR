@@ -5,13 +5,14 @@ using System.Reflection;
 
 
 using System;
+using System.Dynamic;
 using XCompilR.Core;
 
 namespace XCompilR.JavaScript {
 
 
 
-public class Parser : IParser {
+public class Parser : AParser {
 	public const int _EOF = 0;
 	public const int _ident = 1;
 	public const int _intCon = 2;
@@ -113,15 +114,15 @@ enum Modifier {
 
 class Modifiers {
 	private Modifier cur = Modifier.none;
-	private Parser parser;
+	private Parser aParser;
 	
-	public Modifiers(Parser parser) {
-		this.parser = parser;
+	public Modifiers(Parser aParser) {
+		this.aParser = aParser;
 	}
 	
 	public void Add (Modifier m) {
 		if ((cur & m) == 0) cur |= m;
-		else parser.Error("modifier " + m + " already defined");
+		else aParser.Error("modifier " + m + " already defined");
 	}
 	
 	public void Add (Modifiers m) { Add(m.cur); }
@@ -131,7 +132,7 @@ class Modifiers {
 	public void Check (Modifier allowed) {
 		Modifier wrong = cur & (allowed ^ Modifier.all);
 		if (wrong != Modifier.none)
-		  parser.Error("modifier(s) " + wrong + " not allowed here");
+		  aParser.Error("modifier(s) " + wrong + " not allowed here");
   }
 }
 
@@ -164,13 +165,6 @@ static BitArray
 	               );
 
 /*---------------------------- auxiliary methods ------------------------*/
-
-private dynamic obj;
-
-public void BindingObject(dynamic obj)
-{
-    this.obj = obj;
-}
 
 void Error (string s) {
 	if (errDist >= minErrDist) errors.SemErr(la.line, la.col, s);
@@ -355,9 +349,7 @@ bool IsLocalAttrTarget () {
 
 
 
-	public Parser(Scanner scanner) {
-		this.scanner = scanner;
-		errors = new Errors();
+	public Parser() {
 	}
 
 	void SynErr (int n) {
@@ -452,7 +444,7 @@ bool IsLocalAttrTarget () {
 			Get();
 			m.Check(Modifier.fields); 
 			Init();
-			obj.Ident = t.val; 
+			/*BindingObject.Ident = t.val;*/
 		}
 	}
 
@@ -1162,10 +1154,21 @@ bool IsLocalAttrTarget () {
 		default: SynErr(104); break;
 		}
 	}
+        
+    public override void InitParser(AScanner scanner)
+    {
+        this.scanner = (Scanner)scanner;
+        ReInitParser();
+    }
 
+    public override void ReInitParser()
+    {
+        errors = new Errors();
+    }
 
-
-	public void Parse() {
+    public override void Parse(string fileName)
+    {
+        scanner.Scan(fileName);
 		la = new Token();
 		la.val = "";		
 		Get();
@@ -1190,7 +1193,7 @@ bool IsLocalAttrTarget () {
 		{_x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_T, _x,_T,_x,_x, _x,_x,_T,_x, _T,_T,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x, _x,_x,_x,_x}
 
 	};
-} // end Parser
+} // end aParser
 
 
 public class Errors {

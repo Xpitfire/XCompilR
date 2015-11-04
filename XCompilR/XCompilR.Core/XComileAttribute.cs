@@ -27,24 +27,19 @@ namespace XCompilR.Core
             Source = sourceFile;
         }
 
-        public void BindMembers(dynamic obj)
+        public void BindMembers(dynamic bindingObj)
         {
-            Type type = obj.GetType();
+            Type type = bindingObj.GetType();
 
             if (!type.IsSubclassOf(typeof(XCompileObject)))
             {
                 throw new XCompileException("Invalid base class inheritance! Class does not derive from CrossCompileObject!");
             }
             
-            Assembly assembly = Assembly.Load(Language.AssemblyName);
+            var parser = Language.Parser;
+            parser.Parse(Source);
 
-            type = assembly.GetType(Language.ScannerTypeName);
-            IScanner scanner = (IScanner)Activator.CreateInstance(type, Source);
-            type = assembly.GetType(Language.ParserTypeName);
-            IParser parser = (IParser)Activator.CreateInstance(type, scanner);
 
-            parser.BindingObject(obj);
-            parser.Parse();
         }
     }
 }

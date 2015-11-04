@@ -201,7 +201,7 @@ public class UTF8Buffer: Buffer {
 //-----------------------------------------------------------------------------------
 // Scanner
 //-----------------------------------------------------------------------------------
-public class Scanner : IScanner {
+public class Scanner : AScanner {
 	const char EOL = '\n';
 	const int eofSym = 0; /* pdt */
 	const int maxT = 82;
@@ -262,8 +262,12 @@ public class Scanner : IScanner {
 		start[Buffer.EOF] = -1;
 
 	}
+
+    public Scanner()
+    {
+    }
 	
-	public Scanner (string fileName) {
+	public override AScanner Scan(string fileName) {
 		try {
 			Stream stream = new FileStream(fileName, FileMode.Open, FileAccess.Read, FileShare.Read);
 			buffer = new Buffer(stream, false);
@@ -271,11 +275,13 @@ public class Scanner : IScanner {
 		} catch (IOException) {
 			throw new FatalError("Cannot open file " + fileName);
 		}
+	    return this;
 	}
 	
-	public Scanner (Stream s) {
+	public override AScanner Scan(Stream s) {
 		buffer = new Buffer(s, true);
 		Init();
+	    return this;
 	}
 	
 	void Init() {
