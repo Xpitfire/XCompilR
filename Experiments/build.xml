@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<Project name="system" default="build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<Target Name="Build">
+		<CallTarget Targets="PreBuild" />
+		<CallTarget Targets="BuildSolution" />
+		<CallTarget Targets="PostBuild" />
+	</Target>
+	<Target Name="PreBuild">
+		<Message Text="PreBuild Starting" Importance="high" />
+		<Exec Command="$(SolutionDir).nuget\Nuget.Exe restore $(SolutionDir)ExperimentRoslyn\packages.config -PackagesDirectory packages" />
+		<Exec Command="$(SolutionDir)packages\Run00.AppVeyor.0.0.0.105\tools\VersionUpdater.exe -p $(PackageKey) -a $(AzureAccountKey)"/>
+	</Target>
+	<Target Name="BuildSolution">
+		<Message Text="Solution Build Starting" Importance="high" />
+		<MSBuild Targets="Rebuild" Projects="$(SolutionPath)" Properties="Configuration=Release; Platform=Any CPU; BuildingSolutionFile=true;" />
+	</Target>
+	<Target Name="PostBuild">
+		<Message Text="PostBuild Starting" Importance="high" />
+	</Target>
+</Project>

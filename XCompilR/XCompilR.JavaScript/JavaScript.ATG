@@ -1,0 +1,679 @@
+using System.Collections;
+using System.Text;
+using System.Reflection;
+
+COMPILER JavaScript
+
+enum TypeKind {simple, array, pointer}
+
+/*------------------------- modifier handling -----------------------------*/
+
+[Flags]
+enum Modifier {
+	/* available modifiers (reserve one bit per modifier) */
+	@new     = 0x0001, @function = 0x0002, 
+
+	/* sets of modifiers that can be attached to certain program elements    *
+	 * e.g., "constants" marks all modifiers that may be used with constants */
+	none          = 0x0000,
+	fields        = @new,
+	propEvntMeths = @function,
+	all           = 0x3fff
+}
+
+class Modifiers {
+	private Modifier cur = Modifier.none;
+	private Parser parser;
+	
+	public Modifiers(Parser parser) {
+		this.parser = parser;
+	}
+	
+	public void Add (Modifier m) {
+		if ((cur & m) == 0) cur |= m;
+		else parser.Error("modifier " + m + " already defined");
+	}
+	
+	public void Add (Modifiers m) { Add(m.cur); }
+
+	public bool IsNone { get { return cur == Modifier.none; } }
+
+	public void Check (Modifier allowed) {
+		Modifier wrong = cur & (allowed ^ Modifier.all);
+		if (wrong != Modifier.none)
+		  parser.Error("modifier(s) " + wrong + " not allowed here");
+  }
+}
+
+/*----------------------------- token sets -------------------------------*/
+
+const int maxTerminals = 160;  // set size
+
+static BitArray NewSet(params int[] values) {
+	BitArray a = new BitArray(maxTerminals);
+	foreach (int x in values) a[x] = true;
+	return a;
+}
+
+static BitArray
+	unaryOp      = NewSet(_plus, _minus, _not, _tilde, _inc, _dec, _true, _false),
+	binaryOp     = NewSet(_plus, _minus, _times, _div, _mod, _and, _or, _xor,
+	               _eq, _eqtyp, _neq, _gt, _lt, _gte, _lte),
+	typeKW       = NewSet(_char, _bool, _object, _string, _int, _long, _float, _double),
+	unaryHead    = NewSet(_plus, _minus, _not, _tilde, _times, _inc, _dec, _and),
+	assnStartOp  = NewSet(_plus, _minus, _not, _tilde, _times),
+	castFollower = NewSet(_tilde, _not, _lpar, _ident,
+	               /* literals */
+	               _intCon, _realCon, _charCon, _stringCon,
+	               /* any keyword expect as and is */
+	               _bool, _break, _case, _catch, _char, _continue, _default,
+				   _do, _double, _else, _false, _finally, _float, _for, _function,
+				   _goto, _if, _int, _long, _new, _null, _object,
+				   _return, _string, _switch, _this, _throw,
+				   _true, _try, _typeof, _var, _void, _while
+	               );
+
+/*---------------------------- auxiliary methods ------------------------*/
+
+private dynamic obj;
+
+public void BindingObject(dynamic obj)
+{
+    this.obj = obj;
+}
+
+void Error (string s) {
+	if (errDist >= minErrDist) errors.SemErr(la.line, la.col, s);
+	errDist = 0;
+}
+
+bool IsTypeCast () {
+	if (la.kind != _lpar) return false;
+	if (IsSimpleTypeCast()) return true;
+	return GuessTypeCast();
+}
+
+// "(" typeKW ")"
+bool IsSimpleTypeCast () {
+	// assert: la.kind == _lpar
+	scanner.ResetPeek();
+	Token pt1 = scanner.Peek();
+	Token pt = scanner.Peek();
+	return typeKW[pt1.kind] && pt.kind == _rpar;
+}
+
+// "(" Type ")" castFollower
+bool GuessTypeCast () {
+	// assert: la.kind == _lpar
+	string id;
+	scanner.ResetPeek();
+	Token pt = scanner.Peek();
+	if (typeKW[pt.kind]) {
+		pt = scanner.Peek();
+	} else if (pt.kind==_void) {
+		pt = scanner.Peek();
+		if (pt.kind != _times) {
+			return false;
+		}
+		pt = scanner.Peek();
+	} else if(IsQualident(ref pt, out id)) {
+		// nothing to do
+	} else {
+		return false;
+	}
+	if (IsPointerOrDims(ref pt) && pt.kind==_rpar)
+	{
+		pt = scanner.Peek(); // check successor
+		return castFollower[pt.kind];
+	} else {
+		return false;
+	}
+}
+
+/* Checks whether the next sequence of tokens is a qualident *
+ * and returns the qualident string                          *
+ * !!! Proceeds from current peek position !!!               */
+bool IsQualident (ref Token pt, out string qualident) {
+	qualident = "";
+	if (pt.kind == _ident) {
+		qualident = pt.val;
+		pt = scanner.Peek();
+		while (pt.kind == _dot) {
+			pt = scanner.Peek();
+			if (pt.kind != _ident) return false;
+			qualident += "." + pt.val;
+			pt = scanner.Peek();
+		}
+		return true;
+	} else return false;
+}
+
+// Return the n-th token after the current lookahead token
+Token Peek (int n) {
+	scanner.ResetPeek();
+	Token x = la;
+	while (n > 0) { x = scanner.Peek(); n--; }
+	return x;
+}
+
+/*-----------------------------------------------------------------*
+ * Resolver routines to resolve LL(1) conflicts:                   *                                                  *
+ * These routines return a boolean value that indicates            *
+ * whether the alternative at hand shall be choosen or not.        *
+ * They are used in IF ( ... ) expressions.                        *       
+ *-----------------------------------------------------------------*/
+
+// ident "="
+bool IsAssignment () {
+	return la.kind == _ident && Peek(1).kind == _assgn;
+}
+
+// ident ("," | "=" | ";")
+bool IsFieldDecl () {
+	int peek = Peek(1).kind;
+	int peek2 = Peek(2).kind;
+	return la.kind == _var && peek == _ident && 
+	       (peek2 == _comma || peek2 == _assgn || peek2 == _scolon);
+}
+
+/* True, if the comma is not a trailing one, *
+ * like the last one in: a, b, c,            */
+bool NotFinalComma () {
+	int peek = Peek(1).kind;
+	return la.kind == _comma && peek != _rbrace && peek != _rbrack;
+}
+
+// "void" "*"
+bool NotVoidPointer () {
+	return la.kind == _void && Peek(1).kind != _times;
+}
+
+// "." ident
+bool DotAndIdent () {
+	return la.kind == _dot && Peek(1).kind == _ident;
+}
+
+// ident ":"
+bool IsLabel () {
+	return la.kind == _ident && Peek(1).kind == _colon;
+}
+
+// ident "("
+bool IdentAndLPar () {
+	return la.kind == _ident && Peek(1).kind == _lpar;
+}
+
+
+// "[" ("," | "]")
+bool IsDims () {
+	int peek = Peek(1).kind;
+	return la.kind == _lbrack && (peek == _comma || peek == _rbrack);
+}
+
+// "*" | "[" ("," | "]")
+bool IsPointerOrDims () {
+	return la.kind == _times || IsDims();
+}
+
+// skip: { "[" { "," } "]" | "*" }
+// !!! Proceeds from current peek position !!!
+bool IsPointerOrDims (ref Token pt) {
+	for (;;) {
+		if (pt.kind == _lbrack) {
+			do pt = scanner.Peek();
+			while (pt.kind == _comma);
+			if (pt.kind != _rbrack) return false;
+		} else if (pt.kind != _times) break;
+		pt = scanner.Peek();
+	}
+	return true;
+}
+
+// Type ident (Type can be void*)
+bool IsLocalVarDecl () {
+	string ignore;
+	Token pt = la;
+	scanner.ResetPeek();
+	
+	if (typeKW[la.kind] || la.kind == _void) {
+	  pt = scanner.Peek();
+	  if (la.kind == _void && pt.kind != _times) { return false; }
+	} else if (la.kind == _ident && !IsQualident(ref pt, out ignore)) {
+		return false;
+	}
+	
+	return IsPointerOrDims(ref pt) && pt.kind == _ident;
+}
+
+
+
+/* True, if lookahead is a local attribute target specifier, *
+ * i.e. one of "event", "return", "field", "method",         *
+ *             "module", "param", "property", or "type"      */
+bool IsLocalAttrTarget () {
+	int cur = la.kind;
+	string val = la.val;
+	return cur == _return ||
+	       (Peek(1).kind == _colon &&
+	         (val == "field" || val == "method"  ||
+	          val == "param" || val == "type"));
+}
+
+/*------------------------------------------------------------------------*
+ *----- SCANNER DESCRIPTION ----------------------------------------------*
+ *------------------------------------------------------------------------*/
+
+CHARACTERS
+
+	tab                = '\u0009'. /*  9 = tabulator */
+	eol                = '\u000a'. /* 10 = line feed */
+	cr                 = '\u000d'. /* 13 = carriage return */
+	newLine            = cr + eol. /* Line separator character (U+2028) + Paragraph separator character (U+2029) */
+
+	letter             = 'A' .. 'Z' + 'a' .. 'z' + '_'.
+	digit              = "0123456789".
+	hexDigit           = digit + "ABCDEFabcdef".
+	notDigit           = ANY - digit.
+
+	char               = ANY - "'" - '\\' - newLine.
+	verbatimStringChar = ANY - '"'.
+	regularStringChar  = ANY - '"' - '\\' - newLine.
+	notNewLine         = ANY - newLine .
+	ws                 = " " + tab + '\u000b' + '\u000c'. /* Any character with Unicode class Zs */
+
+
+TOKENS
+
+
+	ident = ['@'] letter { letter | digit }.
+  /*--------------------------------------------------------------------------------*/
+	intCon =
+		( digit {digit} | digit {digit} CONTEXT ("." notDigit)
+		| ("0x" | "0X") hexDigit {hexDigit}
+		)
+		["U" | "u" | "L" | "l" | "UL" | "Ul" | "uL" | "ul" | "LU" | "Lu" | "lU" | "lu"].
+  /*--------------------------------------------------------------------------------*/
+	realCon =
+		"." digit {digit} 
+		[("e" | "E") ["+" | "-"] digit {digit}] 
+		["F" | "f" | "D" | "d" | "M" | "m"]
+	| digit {digit} 
+		( "." digit {digit} 
+			[("e" | "E" ) ["+" | "-"] digit {digit} ] 
+			["F" | "f" | "D" | "d" | "M" | "m"]
+		| ("e" | "E") ["+" | "-"] digit {digit}
+			["F" | "f" | "D" | "d" | "M" | "m"]
+		| "F" | "f" | "D" | "d" | "M" | "m"
+		).
+  /*--------------------------------------------------------------------------------*/
+	charCon =
+		"'" (	char
+				| "\\\'" | "\\\"" | "\\\\" | "\\0" | "\\a" | "\\b" | "\\f" | "\\n" | "\\r" | "\\t" | "\\v"
+				| "\\x" hexDigit [hexDigit] [hexDigit] [hexDigit]
+				| "\\u" hexDigit hexDigit hexDigit hexDigit
+				| "\\U" hexDigit hexDigit hexDigit hexDigit hexDigit hexDigit hexDigit hexDigit
+				) 
+		"'".
+  /*--------------------------------------------------------------------------------*/
+	stringCon =
+		"\""	{ regularStringChar
+					| "\\\'" | "\\\"" | "\\\\" | "\\0" | "\\a" | "\\b" | "\\f" | "\\n" | "\\r" | "\\t" | "\\v"
+					| "\\x" hexDigit [hexDigit] [hexDigit] [hexDigit]
+					| "\\u" hexDigit hexDigit hexDigit hexDigit
+					| "\\U" hexDigit hexDigit hexDigit hexDigit hexDigit hexDigit hexDigit hexDigit
+					} 
+		"\""
+	| "@\"" {verbatimStringChar | "\"\""} "\"".
+
+
+	/*----- keyword names needed in LL(1) resolvers -----*/
+	break      = "break".
+	bool       = "bool".
+	case       = "case".
+	catch      = "catch".
+	continue   = "continue".
+	char       = "char".
+	default    = "default".
+	do         = "do".
+	double     = "double".
+	else       = "else".
+	false      = "false".
+	finally    = "finally".
+	float      = "float".
+	for        = "for".
+	function   = "function".
+	goto       = "goto".
+	if         = "if".
+	int        = "int".
+	long       = "long".
+	new        = "new".
+	null       = "null".
+	object     = "object".
+	return     = "return".
+	string     = "string".
+	switch     = "switch".
+	this       = "this".
+	throw      = "throw".
+	true       = "true".
+	try        = "try".
+	typeof     = "typeof".
+	var        = "var".
+	void       = "void".
+	while      = "while".
+
+	/*----- operators and special characters needed in LL(1) resolvers --------------*/
+	and    = "&".
+	assgn  = "=".
+	colon  = ":".
+	comma  = ",".
+	dec    = "--".
+	div    = "/".
+	dot    = ".".
+	eq     = "==".
+	eqtyp  = "===".
+	gt     = ">".
+	gte    = ">=".
+	inc    = "++".
+	lbrace = "{".
+	lbrack = "[".
+	lpar   = "(".
+	lt     = "<".
+	lte    = "<=".
+	minus  = "-".
+	mod    = "%".
+	neq    = "!=".
+	not    = "!".
+	or     = "|".
+	plus   = "+".
+	rbrace = "}".
+	rbrack = "]".
+	rpar   = ")".
+	scolon = ";".
+	tilde  = "~".
+	times  = "*".	
+	xor    = "^".
+
+	
+PRAGMAS
+
+	
+COMMENTS FROM "/*" TO "*/"
+COMMENTS FROM "//" TO eol
+
+IGNORE eol + cr + tab
+
+PRODUCTIONS
+
+/*------------------------------------------------------------------------*
+ *--------------------------- Declarations -------------------------------*
+ *------------------------------------------------------------------------*/
+
+ 
+JavaScript
+= {ScriptMember}
+. 
+/*------------------------------------------------------------------------*/
+ScriptMember                           (. Modifiers m = new Modifiers(this); 
+                                          string id; .)
+=   /*--- field declaration: */
+    IF (IsFieldDecl()) ( "var" Field<m> {"," Field<m>} ";" )
+  | "function" Qualident<out id> 
+    /*--- "not void" method (function) declaration: */
+                                       (. m.Check(Modifier.propEvntMeths); .)
+    "(" [FormalParams] ")" (Block | ";")
+.
+/*------------------------------------------------------------------------*/
+Field<Modifiers m>
+= ident ["="                           (. m.Check(Modifier.fields); .)
+Init                                   (. obj.ident = t.val; .)
+]
+.
+/*------------------------------------------------------------------------*/
+LocalVarDecl                           (. TypeKind dummy; .)
+= Type<out dummy> LocalVar {"," LocalVar}
+.
+/*------------------------------------------------------------------------*/
+LocalVar                               (. TypeKind dummy; .)
+= ident [ "=" Init ]
+.
+/*------------------------------------------------------------------------*/
+Init 
+= Expr | ArrayInit
+.
+/*------------------------------------------------------------------------*/
+ArrayInit
+= "{" [Init {IF (NotFinalComma()) "," Init} [","] ] "}"
+.
+/*------------------------------------------------------------------------*/
+FormalParams                    
+= Par ["," FormalParams]
+.
+/*------------------------------------------------------------------------*/
+Par                                    (. TypeKind dummy; .)
+= Type<out dummy> ident
+.
+/*------------------------------------------------------------------------*/
+Argument
+= Expr
+.
+
+
+/*------------------------------------------------------------------------*
+ *-------------------------------- Types ---------------------------------*
+ *------------------------------------------------------------------------*/
+
+/* Attribute "type" is needed for error messages in EmbeddedStatement     *
+ * and for array creation expressions                                     */
+Type<out TypeKind type>                (. type = TypeKind.simple; .)
+= ( SimpleType 
+  | ClassType                          (. type = TypeKind.pointer; .)
+  )
+  { IF (IsPointerOrDims()) 
+    ( "*"                              (. type = TypeKind.pointer; .)
+    | "[" {","} "]"                    (. type = TypeKind.array; .)
+    ) 
+  }
+.
+/*------------------------------------------------------------------------*/
+ClassType                              (. string id; .)
+= Qualident<out id> | "object" | "string" | "var"
+.
+/*------------------------------------------------------------------------*/
+SimpleType
+= IntType | "float" | "double" | "boolean"
+.
+/*------------------------------------------------------------------------*/
+IntType
+= "int" | "long" | "char"
+.
+/*------------------------------------------------------------------------*/
+Qualident<out string qualident>
+= ident                                (. qualident = t.val; .)
+  { IF (DotAndIdent()) "." ident       (. qualident += "." + t.val; .)
+  }
+.
+
+
+/*------------------------------------------------------------------------*
+ *------------------------------ Statements ------------------------------*
+ *------------------------------------------------------------------------*/
+
+Statement                              (. TypeKind dummy; .)
+= IF (IsLabel()) ident ":" Statement
+| "const" Type<out dummy> ident "=" Expr {"," ident "=" Expr} ";"
+| IF (IsLocalVarDecl()) LocalVarDecl ";"
+| EmbeddedStatement 
+  /* LL(1) confict between LocalVarDecl and StatementExpr: *
+   * ident {"." ident} { "[" ...                           */
+.
+/*------------------------------------------------------------------------*/
+EmbeddedStatement                      (. TypeKind type; .)
+= Block
+| ";"
+| Block
+| StatementExpr ";"
+| "if" "(" Expr ")" EmbeddedStatement ["else" EmbeddedStatement]
+| "switch" "(" Expr ")" "{" {SwitchSection} "}"
+| "while" "(" Expr ")" EmbeddedStatement
+| "do" EmbeddedStatement "while" "(" Expr ")" ";"
+| "for" "(" [ForInit] ";" [Expr] ";" [ForInc] ")" EmbeddedStatement
+| "break" ";"
+| "continue" ";"
+| "return" [Expr] ";"
+| "throw" [Expr] ";"
+| GotoStatement
+| TryStatement
+  "(" Type<out type>                   (. if (type != TypeKind.pointer) Error("can only fix pointer types"); .)
+      ident "=" Expr {"," ident "=" Expr} 
+  ")" EmbeddedStatement
+.
+/*------------------------------------------------------------------------*/
+Block
+= "{" {Statement} "}".
+/*------------------------------------------------------------------------*/
+StatementExpr
+=                                      (. bool isAssignment = assnStartOp[la.kind] || IsTypeCast(); .)
+  Unary 
+  ( AssignOp Expr 
+  |                                    (. if (isAssignment) Error("error in assignment."); .)
+  )
+.
+/*------------------------------------------------------------------------*/
+AssignOp
+= "=" | "+=" | "-=" | "*=" | "/=" | "%=" | "&=" | "|=" | "^="
+.
+/*------------------------------------------------------------------------*/
+SwitchSection
+= SwitchLabel { SwitchLabel } Statement { Statement }
+.
+/*------------------------------------------------------------------------*/
+SwitchLabel
+= "case" Expr ":" 
+| "default" ":"
+.
+/*------------------------------------------------------------------------*/
+ForInit
+= IF (IsLocalVarDecl()) LocalVarDecl
+| StatementExpr { "," StatementExpr }
+.
+/*------------------------------------------------------------------------*/
+ForInc
+= StatementExpr { "," StatementExpr }
+.
+/*------------------------------------------------------------------------*/
+GotoStatement
+= "goto" ( ident ";" | "case" Expr ";" | "default" ";" )
+.
+/*------------------------------------------------------------------------*/
+TryStatement
+= "try" Block
+  ( CatchClauses [ "finally" Block ]
+  | "finally" Block
+  )
+.
+/*------------------------------------------------------------------------*/
+CatchClauses
+= "catch"
+  ( Block
+  | "(" [ident] ")" Block [CatchClauses]
+  )
+.
+
+
+/*------------------------------------------------------------------------*
+ *----------------------------- Expressions ------------------------------*
+ *------------------------------------------------------------------------*/
+
+
+Expr
+= Unary
+  ( OrExpr ["?" Expr ":" Expr]
+  | AssignOp Expr
+  )
+.
+/*------------------------------------------------------------------------*/
+OrExpr
+= AndExpr {"||" Unary AndExpr}
+.
+/*------------------------------------------------------------------------*/
+AndExpr
+= BitOrExpr {"&&" Unary BitOrExpr}
+.
+/*------------------------------------------------------------------------*/
+BitOrExpr
+= BitXorExpr {"|" Unary BitXorExpr}
+.
+/*------------------------------------------------------------------------*/
+BitXorExpr
+= BitAndExpr {"^" Unary BitAndExpr}
+.
+/*------------------------------------------------------------------------*/
+BitAndExpr
+= EqlExpr {"&" Unary EqlExpr}
+.
+/*------------------------------------------------------------------------*/
+EqlExpr
+= RelExpr  {("!=" | "==" | "===") Unary RelExpr}
+.
+/*------------------------------------------------------------------------*/
+RelExpr                                (. TypeKind dummy; .)
+= AddExpr
+  { ("<" | ">" | "<=" | ">=") Unary AddExpr }
+.
+/*------------------------------------------------------------------------*/
+AddExpr
+= MulExpr {( "+" | "-" ) Unary MulExpr}
+.
+/*------------------------------------------------------------------------*/
+MulExpr
+= {("*" | "/" | "%") Unary}
+.
+/*------------------------------------------------------------------------*/
+Unary                                  (. TypeKind dummy; .)
+=
+  { IF (unaryHead[la.kind] || IsTypeCast())
+    ( "+" | "-" | "!" | "~" | "*" | "++" | "--" | "&"
+	  | "(" Type<out dummy> ")" 
+      /* Problem:  "(" Type ")" from here and                     *
+       *           "(" Expr ")" from Primary                      *
+       *           are not distinguishable                        *
+       * Solution: (in IsTypeCast())                              *
+       * use external information from compiled assembly or guess */
+    )
+	} 
+  Primary
+.
+/*------------------------------------------------------------------------*/
+Primary                                (. TypeKind type; bool isArrayCreation = false; .)
+=
+  ( ident
+  | Literal
+  | "(" Expr ")"
+  | "this"
+  | "new" Type<out type> 
+    ( /*--- delegate or object creation expression:                     *
+       * Note: a delegate creation expression allows only a single Expr *
+       *       not an argument list, but this is not checked here       */
+      "(" [Argument {"," Argument}] ")"
+    | /*--- array creation expr */     (. isArrayCreation = true; .)
+      "["  Expr {"," Expr} "]" {IF (IsDims())  "[" {","} "]"}  [ArrayInit] 
+    |                                  (. if (type != TypeKind.array) Error("array type expected");
+                                          isArrayCreation = true; .)
+      ArrayInit
+    )
+  | "typeof" "(" Type<out type> ")"
+  )
+  
+  { "++" | "--" 
+  | "." ident
+  | "(" [Argument {"," Argument}] ")"
+  |                                    (. if (isArrayCreation) Error("element access not allow on array creation"); .)
+    "[" Expr {"," Expr} "]" 
+  }
+.
+/*------------------------------------------------------------------------*/
+Literal
+= intCon | realCon | charCon | stringCon | "true" | "false" | "null".
+
+
+END JavaScript.

@@ -17,6 +17,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExperimentSourceLoad", "Exp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VSIXProject1", "VSIXProject1\VSIXProject1.csproj", "{880EEA3B-7E63-4B7D-B888-0D1A2695DF34}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExperimentRoslyn", "ExperimentRoslyn\ExperimentRoslyn.csproj", "{D210944C-4CAD-4DE0-AB0A-D1B223F0F402}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".appveyor", ".appveyor", "{CEE3AF7B-0995-4FC9-8136-D4475D214F2D}"
+	ProjectSection(SolutionItems) = preProject
+		build.xml = build.xml
+		publish.ps1 = publish.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +47,10 @@ Global
 		{880EEA3B-7E63-4B7D-B888-0D1A2695DF34}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{880EEA3B-7E63-4B7D-B888-0D1A2695DF34}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{880EEA3B-7E63-4B7D-B888-0D1A2695DF34}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D210944C-4CAD-4DE0-AB0A-D1B223F0F402}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D210944C-4CAD-4DE0-AB0A-D1B223F0F402}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D210944C-4CAD-4DE0-AB0A-D1B223F0F402}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D210944C-4CAD-4DE0-AB0A-D1B223F0F402}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
