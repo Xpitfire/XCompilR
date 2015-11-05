@@ -159,6 +159,7 @@ public class Errors {
 	public virtual void Warning(string s) {
 		errorStream.WriteLine(s);
 	}
+	
 } // Errors
 
 

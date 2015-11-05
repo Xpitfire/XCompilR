@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Pseudo.Net.Backend;
+using Pseudo.Net.Backend.Roslyn;
 
 namespace XCompilR.Core
 {
@@ -40,6 +43,14 @@ namespace XCompilR.Core
             parser.BindingObject = bindingObj;
             parser.Parse(Source);
 
+            // TODO: change from code *.cs code writer to Roslyn in-memory objects.
+            if (parser.ProgramRoot != null)
+            {
+                BaseGenerator generator = new RoslynGenerator(
+                    parser.ProgramRoot,
+                    msg => Debug.WriteLine($"RoslynGenerator error: {msg}"));
+                generator.Generate(@"E:\Temp\" + Language.AssemblyName + ".cs", Target.CS);
+            }
         }
     }
 }

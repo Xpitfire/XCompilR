@@ -57,6 +57,7 @@ namespace XCompile.ParserGen.CocoR
                 parameters.ReferencedAssemblies.Add("mscorlib.dll");
                 parameters.ReferencedAssemblies.Add("Microsoft.CSharp.dll");
                 parameters.ReferencedAssemblies.Add("XCompilR.Core.dll");
+                parameters.ReferencedAssemblies.Add("Pseudo.Net.AbstractSyntaxTree.dll");
 
                 var codeProvider = new CSharpCodeProvider(new Dictionary<string, string>
                 {

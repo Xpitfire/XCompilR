@@ -65,6 +65,16 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Pseudo.Net.AbstractSyntaxTree\Pseudo.Net.AbstractSyntaxTree.csproj">
+      <Project>{A2331453-0898-4750-85EA-77C0A2C22B24}</Project>
+      <Name>Pseudo.Net.AbstractSyntaxTree</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Pseudo.Net.Backend\Pseudo.Net.Backend.csproj">
+      <Project>{85907329-9128-49EF-A660-B1DF13D9A10F}</Project>
+      <Name>Pseudo.Net.Backend</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\PostSharp.4.1.28\tools\PostSharp.targets" Condition="Exists('..\packages\PostSharp.4.1.28\tools\PostSharp.targets')" />
   <Target Name="EnsurePostSharpImported" BeforeTargets="BeforeBuild" Condition="'$(PostSharp30Imported)' == ''">

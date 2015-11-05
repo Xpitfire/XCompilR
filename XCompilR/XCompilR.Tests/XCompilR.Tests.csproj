@@ -64,6 +64,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Pseudo.Net.AbstractSyntaxTree\Pseudo.Net.AbstractSyntaxTree.csproj">
+      <Project>{a2331453-0898-4750-85ea-77c0a2c22b24}</Project>
+      <Name>Pseudo.Net.AbstractSyntaxTree</Name>
+    </ProjectReference>
     <ProjectReference Include="..\XCompile.ParserGen.CocoR\XCompile.ParserGen.CocoR.csproj">
       <Project>{c5f38993-86b7-4454-a803-b909b73128af}</Project>
       <Name>XCompile.ParserGen.CocoR</Name>
@@ -76,13 +80,23 @@
       <Project>{d15c6afc-a74e-4e9b-a97b-9eabe8c29050}</Project>
       <Name>XCompilR.JavaScript</Name>
     </ProjectReference>
+    <ProjectReference Include="..\XCompilR.PseudoNet\XCompilR.PseudoNet.csproj">
+      <Project>{96dc533e-588c-4b73-8ee5-9ddbbf75c9aa}</Project>
+      <Name>XCompilR.PseudoNet</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="hello.psc">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="JavaScript.ATG">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
     <None Include="Parser.frame">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="PSEUDO.atg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="Scanner.frame">

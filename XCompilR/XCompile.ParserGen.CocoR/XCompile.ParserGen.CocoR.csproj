@@ -78,6 +78,10 @@
     <None Include="XCompile.ParserGen.CocoR.psproj" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Pseudo.Net.AbstractSyntaxTree\Pseudo.Net.AbstractSyntaxTree.csproj">
+      <Project>{a2331453-0898-4750-85ea-77c0a2c22b24}</Project>
+      <Name>Pseudo.Net.AbstractSyntaxTree</Name>
+    </ProjectReference>
     <ProjectReference Include="..\XCompilR.Core\XCompilR.Core.csproj">
       <Project>{a07dcc98-877e-476c-a682-b1bc6f1f416e}</Project>
       <Name>XCompilR.Core</Name>

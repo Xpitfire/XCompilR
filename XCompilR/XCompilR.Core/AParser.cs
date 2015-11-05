@@ -4,6 +4,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Pseudo.Net.AbstractSyntaxTree;
 
 namespace XCompilR.Core
 {
@@ -12,6 +13,7 @@ namespace XCompilR.Core
     public abstract class AParser
     {
         public dynamic BindingObject { get; set; }
+        public ProgramRootNode ProgramRoot { get; set; }
 
         public abstract void InitParser(AScanner scanner);
         public abstract void ReInitParser();

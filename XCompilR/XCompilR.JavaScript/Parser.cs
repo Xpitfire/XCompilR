@@ -117,15 +117,15 @@ enum Modifier {
 
 class Modifiers {
 	private Modifier cur = Modifier.none;
-	private Parser aParser;
+	private Parser parser;
 	
-	public Modifiers(Parser aParser) {
-		this.aParser = aParser;
+	public Modifiers(Parser parser) {
+		this.parser = parser;
 	}
 	
 	public void Add (Modifier m) {
 		if ((cur & m) == 0) cur |= m;
-		else aParser.Error("modifier " + m + " already defined");
+		else parser.Error("modifier " + m + " already defined");
 	}
 	
 	public void Add (Modifiers m) { Add(m.cur); }
@@ -135,7 +135,7 @@ class Modifiers {
 	public void Check (Modifier allowed) {
 		Modifier wrong = cur & (allowed ^ Modifier.all);
 		if (wrong != Modifier.none)
-		  aParser.Error("modifier(s) " + wrong + " not allowed here");
+		  parser.Error("modifier(s) " + wrong + " not allowed here");
   }
 }
 

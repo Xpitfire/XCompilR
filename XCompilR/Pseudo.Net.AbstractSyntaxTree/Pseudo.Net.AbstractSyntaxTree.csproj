@@ -83,6 +83,7 @@
     <Compile Include="Statements\ReturnStatement.cs" />
     <Compile Include="Statements\StatementNode.cs" />
     <Compile Include="Statements\WhileStatement.cs" />
+    <Compile Include="SyntaxTreeBuilder.cs" />
     <Compile Include="TypeRepository.cs" />
     <Compile Include="Types\ArrayTypeNode.cs" />
     <Compile Include="Types\BaseTypeNode.cs" />

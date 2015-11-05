@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pseudo.Net.Roslyn.Wrapper",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pseudo.Net.Backend", "Pseudo.Net.Backend\Pseudo.Net.Backend.csproj", "{85907329-9128-49EF-A660-B1DF13D9A10F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XCompilR.PseudoNet", "XCompilR.PseudoNet\XCompilR.PseudoNet.csproj", "{96DC533E-588C-4B73-8EE5-9DDBBF75C9AA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -57,6 +59,10 @@ Global
 		{85907329-9128-49EF-A660-B1DF13D9A10F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{85907329-9128-49EF-A660-B1DF13D9A10F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{85907329-9128-49EF-A660-B1DF13D9A10F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{96DC533E-588C-4B73-8EE5-9DDBBF75C9AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{96DC533E-588C-4B73-8EE5-9DDBBF75C9AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{96DC533E-588C-4B73-8EE5-9DDBBF75C9AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{96DC533E-588C-4B73-8EE5-9DDBBF75C9AA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
