@@ -49,7 +49,7 @@ namespace XCompilR.Core
                 BaseGenerator generator = new RoslynGenerator(
                     parser.ProgramRoot,
                     msg => Debug.WriteLine($"RoslynGenerator error: {msg}"));
-                generator.Generate(@"E:\Temp\" + Language.AssemblyName + ".cs", Target.CS);
+                generator.Generate(Language.AssemblyName + ".cs", Target.CS);
             }
         }
     }
