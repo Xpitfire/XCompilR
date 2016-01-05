@@ -2,7 +2,7 @@
 using System;
 using System.IO;
 using System.Collections;
-using XCompilR.Core;
+using XCompilR.Library;
 
 namespace XCompilR.JavaScript {
 

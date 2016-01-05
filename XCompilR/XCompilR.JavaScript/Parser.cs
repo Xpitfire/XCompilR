@@ -2,13 +2,12 @@ using System.Collections;
 using System.Text;
 using System.Reflection;
 using Roslyn.Compilers;
-using Roslyn.Compilers.CSharp;
 
 
 
 using System;
 using System.Dynamic;
-using XCompilR.Core;
+using XCompilR.Library;
 
 namespace XCompilR.JavaScript {
 
@@ -89,8 +88,7 @@ public class Parser : AParser {
 	const bool _T = true;
 	const bool _x = false;
 	const int minErrDist = 2;
-
-    public ExpressionStatementSyntax ExpressionStatementSyntax;
+    
 	public Scanner scanner;
 	public Errors  errors;
 
@@ -1171,20 +1169,6 @@ bool IsLocalAttrTarget () {
 
     public override void Parse(string fileName)
     {
-        ExpressionStatementSyntax = Syntax.ExpressionStatement(
-    Syntax.InvocationExpression(
-        Syntax.MemberAccessExpression(
-            SyntaxKind.MemberAccessExpression,
-            Syntax.IdentifierName("Console"),
-            name: Syntax.IdentifierName("WriteLine")),
-        Syntax.ArgumentList(
-            arguments: Syntax.SeparatedList<ArgumentSyntax>(
-                Syntax.Argument(
-                    expression: Syntax.LiteralExpression(
-                        SyntaxKind.StringLiteralExpression,
-                        Syntax.Literal(
-                            text: @"""Goodbye everyone!""",
-                            value: "Goodbye everyone!")))))));
         scanner.Scan(fileName);
 		la = new Token();
 		la.val = "";		

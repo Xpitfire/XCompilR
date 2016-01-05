@@ -2,14 +2,12 @@
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using at.jku.ssw.Coco;
 using Microsoft.CSharp;
-using XCompilR.Core;
 using PostSharp.Patterns.Diagnostics;
+using XCompilR.Library;
+using XCompilR.ParserGen.Library;
 
 namespace XCompile.ParserGen.CocoR
 {
@@ -56,8 +54,7 @@ namespace XCompile.ParserGen.CocoR
                 parameters.ReferencedAssemblies.Add("System.dll");
                 parameters.ReferencedAssemblies.Add("mscorlib.dll");
                 parameters.ReferencedAssemblies.Add("Microsoft.CSharp.dll");
-                parameters.ReferencedAssemblies.Add("XCompilR.Core.dll");
-                parameters.ReferencedAssemblies.Add("Pseudo.Net.AbstractSyntaxTree.dll");
+                parameters.ReferencedAssemblies.Add("XCompilR.Library.dll");
 
                 var codeProvider = new CSharpCodeProvider(new Dictionary<string, string>
                 {

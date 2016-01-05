@@ -28,7 +28,7 @@ Coco/R itself) does not fall under the GNU General Public License.
 using System;
 using System.IO;
 using System.Collections.Generic;
-using XCompilR.Core;
+using XCompilR.Library;
 
 -->namespace
 

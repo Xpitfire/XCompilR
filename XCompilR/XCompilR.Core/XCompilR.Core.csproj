@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>XCompilR.Core</RootNamespace>
     <AssemblyName>XCompilR.Core</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <DontImportPostSharp>True</DontImportPostSharp>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -74,24 +75,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ABindingLanguage.cs" />
-    <Compile Include="AParser.cs" />
-    <Compile Include="XCompilRExceptionHandlerAttribute.cs" />
-    <Compile Include="IParserGen.cs" />
-    <Compile Include="AScanner.cs" />
     <Compile Include="XComileAttribute.cs" />
-    <Compile Include="XCompileException.cs" />
     <Compile Include="XCompileObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="XCompilR.Core.psproj" />
-    <None Include="XCompilRClassDiagram.cd" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
     <Analyzer Include="..\packages\Microsoft.CodeAnalysis.Analyzers.1.1.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.Analyzers.dll" />
     <Analyzer Include="..\packages\Microsoft.CodeAnalysis.Analyzers.1.1.0\analyzers\dotnet\cs\Microsoft.CodeAnalysis.CSharp.Analyzers.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\XCompilR.Library\XCompilR.Library.csproj">
+      <Project>{77e77055-7aaf-4d0c-ab89-7b6c60c6d075}</Project>
+      <Name>XCompilR.Library</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\PostSharp.4.1.28\tools\PostSharp.targets" Condition="Exists('..\packages\PostSharp.4.1.28\tools\PostSharp.targets')" />

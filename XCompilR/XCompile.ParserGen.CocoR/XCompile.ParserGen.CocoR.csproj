@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>XCompile.ParserGen.CocoR</RootNamespace>
     <AssemblyName>XCompile.ParserGen.CocoR</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <DontImportPostSharp>True</DontImportPostSharp>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -79,13 +80,13 @@
     <None Include="XCompile.ParserGen.CocoR.psproj" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Pseudo.Net.AbstractSyntaxTree\Pseudo.Net.AbstractSyntaxTree.csproj">
-      <Project>{a2331453-0898-4750-85ea-77c0a2c22b24}</Project>
-      <Name>Pseudo.Net.AbstractSyntaxTree</Name>
+    <ProjectReference Include="..\XCompilR.Library\XCompilR.Library.csproj">
+      <Project>{77e77055-7aaf-4d0c-ab89-7b6c60c6d075}</Project>
+      <Name>XCompilR.Library</Name>
     </ProjectReference>
-    <ProjectReference Include="..\XCompilR.Core\XCompilR.Core.csproj">
-      <Project>{a07dcc98-877e-476c-a682-b1bc6f1f416e}</Project>
-      <Name>XCompilR.Core</Name>
+    <ProjectReference Include="..\XCompilR.ParserGen.Library\XCompilR.ParserGen.Library.csproj">
+      <Project>{59c22570-a8fe-48b2-8339-a8ce77c360b4}</Project>
+      <Name>XCompilR.ParserGen.Library</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

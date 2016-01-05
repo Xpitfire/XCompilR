@@ -23,9 +23,6 @@ namespace XCompilR.IntelliSense
         [Import]
         internal ITextStructureNavigatorSelectorService NavigatorService { get; set; }
 
-        public ICompletionSource TryCreateCompletionSource(ITextBuffer textBuffer)
-        {
-            return new TestCompletionSource(this, textBuffer);
-        }
+        public ICompletionSource TryCreateCompletionSource(ITextBuffer textBuffer) => new TestCompletionSource(this, textBuffer);
     }
 }
