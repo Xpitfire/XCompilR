@@ -40,7 +40,7 @@ namespace XCompilR.Core
         [Log]
         public override void OnException(MethodExecutionArgs args)
         {
-            if (_exceptionType.IsInstanceOfType(typeof (XCompileException)))
+            if (_exceptionType ==  typeof(XCompileException))
             {
                 // set the method behavior after an exception occurred
                 args.FlowBehavior = FlowBehavior.Return;

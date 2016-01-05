@@ -22,7 +22,18 @@ namespace XCompilR.Core
             _properties[binder.Name] = value;
             return true;
         }
-        
+
+        public override bool TryConvert(ConvertBinder binder, out object result)
+        {
+            if (binder.Type == typeof(Dictionary<string, object>))
+            {
+                result = _properties;
+                return true;
+            }
+            result = null;
+            return base.TryConvert(binder, out result);
+        }
+
         protected XCompileObject()
         {
             var attributeArray = (XCompileAttribute[])GetType().GetCustomAttributes(typeof(XCompileAttribute), false);

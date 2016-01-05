@@ -76,6 +76,10 @@
       <Project>{d15c6afc-a74e-4e9b-a97b-9eabe8c29050}</Project>
       <Name>XCompilR.JavaScript</Name>
     </ProjectReference>
+    <ProjectReference Include="..\XCompilR.PseudoNet\XCompilR.PseudoNet.csproj">
+      <Project>{96dc533e-588c-4b73-8ee5-9ddbbf75c9aa}</Project>
+      <Name>XCompilR.PseudoNet</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="hello.psc">

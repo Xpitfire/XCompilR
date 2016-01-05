@@ -13,9 +13,10 @@ namespace XCompilR.Core
     {
         public dynamic BindingObject { get; set; }
 
-        public Dictionary<string, object> BindingObjectMembers { get; set; } 
+        public Dictionary<string, object> BindingObjectMembers { get; set; }
 
-        public CompilationUnitSyntax CompilationUnitSyntax { get; } = Syntax.CompilationUnit();
+        private CompilationUnitSyntax _compilationUnitSyntax;
+        public CompilationUnitSyntax CompilationUnitSyntax => _compilationUnitSyntax ?? (_compilationUnitSyntax = Syntax.CompilationUnit());
 
         //[XCompilRExceptionHandler(typeof(XCompileException), AttributeInheritance = MulticastInheritance.Multicast)]
         public abstract void InitParser(AScanner scanner);

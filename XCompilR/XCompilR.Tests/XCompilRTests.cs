@@ -9,7 +9,7 @@ namespace XCompilR.Tests
     public class XCompilRTests
     {
         
-        [XCompile("XCompilR.JavaScript", "test.js")]
+        [XCompile("XCompilR.JavaScript", "test.js", "Test")]
         private class DemoJavaScript : XCompileObject { }
 
         [TestMethod]
@@ -19,7 +19,7 @@ namespace XCompilR.Tests
             Assert.IsTrue(int.Parse(d.Ident) == 5);
         }
 
-        [XCompile("XCompilR.PseudoNet", "hello.psc")]
+        [XCompile("XCompilR.PseudoNet", "hello.psc", "Hello")]
         private class DemoPseudoNet : XCompileObject { }
 
         [TestMethod]
