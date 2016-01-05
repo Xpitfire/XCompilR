@@ -10,12 +10,12 @@ using at.jku.ssw.Coco;
 using Microsoft.CSharp;
 using XCompilR.Core;
 using PostSharp.Patterns.Diagnostics;
-using PostSharp.Extensibility;
 
 namespace XCompile.ParserGen.CocoR
 {
     public class CocoParserGen : IParserGen
     {
+        [LogException]
         private Assembly LoadAssembly(string srcName, string nsName)
         {
             try

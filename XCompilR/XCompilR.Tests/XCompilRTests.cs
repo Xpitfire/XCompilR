@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using XCompile.ParserGen.CocoR;
 using XCompilR.Core;
 
@@ -9,7 +8,7 @@ namespace XCompilR.Tests
     public class XCompilRTests
     {
         
-        [XCompile("XCompilR.JavaScript", "test.js", "Test")]
+        [XCompile("XCompilR.JavaScript", "test.js", "Test", "Demo")]
         private class DemoJavaScript : XCompileObject { }
 
         [TestMethod]
@@ -19,7 +18,7 @@ namespace XCompilR.Tests
             Assert.IsTrue(int.Parse(d.Ident) == 5);
         }
 
-        [XCompile("XCompilR.PseudoNet", "hello.psc", "Hello")]
+        [XCompile("XCompilR.PseudoNet", "hello.psc", "Hello", "Demo")]
         private class DemoPseudoNet : XCompileObject { }
 
         [TestMethod]

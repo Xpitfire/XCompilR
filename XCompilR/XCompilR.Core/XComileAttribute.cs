@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Roslyn.Compilers;
-using Roslyn.Compilers.CSharp;
-using SyntaxKind = Roslyn.Compilers.CSharp.SyntaxKind;
 
 namespace XCompilR.Core
 {
@@ -16,16 +15,18 @@ namespace XCompilR.Core
     public class XCompileAttribute : Attribute
     {
         private ABindingLanguage Language { get; }
-        private readonly string _targetCompilationName;
+        private readonly string _targetNamcespace;
+        private readonly string _targetMainClassName;
 
         public string Source { get; set; }
 
-        public XCompileAttribute(string bindingLanguageAssembly, string sourceFile, string targetCompilationName)
+        public XCompileAttribute(string bindingLanguageAssembly, string sourceFile, string targetMainClassName, string targetNamespace = null)
         {
             Assembly assembly = Assembly.Load(bindingLanguageAssembly);
             Type type = assembly.GetType(bindingLanguageAssembly + ".BindingLanguage");
             Language = (ABindingLanguage)Activator.CreateInstance(type);
-            _targetCompilationName = targetCompilationName;
+            _targetNamcespace = targetNamespace ?? bindingLanguageAssembly;
+            _targetMainClassName = targetMainClassName;
             Source = sourceFile;
         }
 
@@ -41,17 +42,20 @@ namespace XCompilR.Core
 
             var parser = Language.Parser;
             parser.BindingObject = bindingObj;
-            parser.BindingObjectMembers = bindingObj;
             parser.Parse(Source);
             
+            if (parser.CompilationUnitSyntax == null)
+                parser.InitializeExecutableCompilationUnit(_targetNamcespace, _targetMainClassName);
+
             // Creates the copimlation of a dll for the syntax tree received from the parser, 
             // adding references at runtime including metadata reference of System library
-            var compilation = Compilation.Create(
-                $"{_targetCompilationName}.dll", 
-                new CompilationOptions(OutputKind.DynamicallyLinkedLibrary),
-                references: new[] {new MetadataFileReference(typeof (object).Assembly.Location)},
-                syntaxTrees: new[] {parser.CompilationUnitSyntax.SyntaxTree}
+            var mscorlib = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
+            var compilation = CSharpCompilation.Create(
+                $"{_targetMainClassName}.dll",
+                references: new[] { mscorlib },
+                syntaxTrees: new[] { parser.CompilationUnitSyntax.SyntaxTree }
                 );
+            compilation.GetSemanticModel(parser.CompilationUnitSyntax.SyntaxTree, false);
 
             // Here the compiled code is emitted into memory stream which is used to create a assembly at runtime 
             Assembly assembly;
@@ -60,10 +64,11 @@ namespace XCompilR.Core
                 compilation.Emit(stream);
                 assembly = Assembly.Load(stream.GetBuffer());
             }
-            
+
             // Adding the new assembly to the dynamic object instance
-            IDictionary<string, object> bindingObjProperties = bindingObj;
-            bindingObjProperties.Add(Language.AssemblyName, assembly);
+            bindingObj.Add(Language.AssemblyName, assembly);
+            bindingObj.Add($"CreateInstanceOf{_targetMainClassName}", new Func<object>(() => assembly.CreateInstance($"{_targetNamcespace}.{_targetMainClassName}")));
         }
+        
     }
 }

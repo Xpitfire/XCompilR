@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -10,16 +11,16 @@ namespace XCompilR.Core
     [Serializable]
     public abstract class XCompileObject : DynamicObject
     {
-        private readonly Dictionary<string, object> _properties = new Dictionary<string, object>();
+        private readonly Dictionary<string, object> _members = new Dictionary<string, object>();
 
         public override bool TryGetMember(GetMemberBinder binder, out object result)
         {
-            return _properties.TryGetValue(binder.Name, out result);
+            return _members.TryGetValue(binder.Name, out result);
         }
 
         public override bool TrySetMember(SetMemberBinder binder, object value)
         {
-            _properties[binder.Name] = value;
+            _members[binder.Name] = value;
             return true;
         }
 
@@ -27,11 +28,29 @@ namespace XCompilR.Core
         {
             if (binder.Type == typeof(Dictionary<string, object>))
             {
-                result = _properties;
+                result = _members;
                 return true;
             }
             result = null;
             return base.TryConvert(binder, out result);
+        }
+
+        public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
+        {
+            Type dictType = typeof(Dictionary<string, object>);
+            try
+            {
+                result = dictType.InvokeMember(
+                             binder.Name,
+                             BindingFlags.InvokeMethod,
+                             null, _members, args);
+                return true;
+            }
+            catch
+            {
+                result = null;
+                return false;
+            }
         }
 
         protected XCompileObject()
