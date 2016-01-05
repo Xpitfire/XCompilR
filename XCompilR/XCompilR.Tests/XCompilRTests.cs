@@ -11,6 +11,7 @@ namespace XCompilR.Tests
         
         [XCompile("XCompilR.JavaScript", "test.js")]
         private class DemoJavaScript : XCompileObject { }
+
         [TestMethod]
         public void TestDynamicObject()
         {
@@ -20,6 +21,7 @@ namespace XCompilR.Tests
 
         [XCompile("XCompilR.PseudoNet", "hello.psc")]
         private class DemoPseudoNet : XCompileObject { }
+
         [TestMethod]
         public void TestDynamicObjectPseudo()
         {
@@ -42,5 +44,6 @@ namespace XCompilR.Tests
             AParser parser = parserGen.CreateParser("PSEUDO.atg");
             Assert.IsNotNull(parser);
         }
+        
     }
 }

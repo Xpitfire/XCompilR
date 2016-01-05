@@ -72,6 +72,7 @@
     <Compile Include="CocoParserGen.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="CocoRClassDiagram.cd" />
     <None Include="JKU.Coco\Parser.frame" />
     <None Include="JKU.Coco\Scanner.frame" />
     <None Include="packages.config" />

@@ -1,0 +1,180 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="XCompile.ParserGen.CocoR.CocoParserGen" Collapsed="true" BaseTypeListCollapsed="true">
+    <Position X="10" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAgAAAAAAAAAA=</HashCode>
+      <FileName>CocoParserGen.cs</FileName>
+    </TypeIdentifier>
+    <Lollipop Position="0.2" Collapsed="true" />
+  </Class>
+  <Class Name="at.jku.ssw.Coco.Coco" Collapsed="true">
+    <Position X="8.25" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAA=</HashCode>
+      <FileName>JKU.Coco\Coco.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="at.jku.ssw.Coco.State" Collapsed="true">
+    <Position X="8.25" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAJAAAAAAAAAAAAAAAAAAAAAEAIAAAAIAAAAEIgAAA=</HashCode>
+      <FileName>JKU.Coco\DFA.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="at.jku.ssw.Coco.Action" Collapsed="true">
+    <Position X="3" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACBAAAAABAAABAKAAAAAAAAAAAAAEAAAAAAAIAAAA=</HashCode>
+      <FileName>JKU.Coco\DFA.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="at.jku.ssw.Coco.Target" Collapsed="true">
+    <Position X="4.75" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAIAAAA=</HashCode>
+      <FileName>JKU.Coco\DFA.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="at.jku.ssw.Coco.Melted" Collapsed="true">
+    <Position X="4.75" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAEAAAAAAIAAAA=</HashCode>
+      <FileName>JKU.Coco\DFA.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="at.jku.ssw.Coco.Comment" Collapsed="true">
+    <Position X="3" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAgAAAAAQAAAAAgAAAAAAAAAAIAAAA=</HashCode>
+      <FileName>JKU.Coco\DFA.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="at.jku.ssw.Coco.CharSet" Collapsed="true">
+    <Position X="6.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAAAAAAAgAAABQAAyAASAAAAAAAACAAgAAAAAAAAAJA=</HashCode>
+      <FileName>JKU.Coco\DFA.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="at.jku.ssw.Coco.Generator" Collapsed="true">
+    <Position X="10" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACIABAAAAQAAEAAAQAAAAAAAAAAAABIACEgAAAA=</HashCode>
+      <FileName>JKU.Coco\DFA.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="at.jku.ssw.Coco.DFA" Collapsed="true">
+    <Position X="4.75" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>A4kCACYAQqIAAAQkAAkAQAYA0sDCIAJMsACAAgOBOAA=</HashCode>
+      <FileName>JKU.Coco\DFA.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="at.jku.ssw.Coco.Parser" Collapsed="true">
+    <Position X="8.25" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>UAAkIiB4AECABQFoAYWUCAAAEaggACCQEEYAMABACwA=</HashCode>
+      <FileName>JKU.Coco\Parser.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="at.jku.ssw.Coco.Errors" Collapsed="true">
+    <Position X="6.5" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgAgAAAAAAAABAAAABAAAAAAAAAAAAAAAAAAABE=</HashCode>
+      <FileName>JKU.Coco\Parser.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="at.jku.ssw.Coco.FatalError" Collapsed="true">
+    <Position X="8.25" Y="1.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>JKU.Coco\Parser.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="at.jku.ssw.Coco.ParserGen" Collapsed="true">
+    <Position X="10" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAXoBBBAEAAAAAAEAQQQEGBCAAECIOgBAAAiAAQA=</HashCode>
+      <FileName>JKU.Coco\ParserGen.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="at.jku.ssw.Coco.Token" Collapsed="true">
+    <Position X="6.5" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAYAAAAAAAAAAQAAAAYAAAAAAAAAAAAAAAAIAAAA=</HashCode>
+      <FileName>JKU.Coco\Scanner.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="at.jku.ssw.Coco.Buffer" Collapsed="true">
+    <Position X="0.5" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAgACBAAEAAQAAAQABACgAAOAEAAACAAIAACAAAA=</HashCode>
+      <FileName>JKU.Coco\Scanner.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="at.jku.ssw.Coco.UTF8Buffer" Collapsed="true">
+    <Position X="0.5" Y="1.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAgAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>JKU.Coco\Scanner.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="at.jku.ssw.Coco.Scanner" Collapsed="true">
+    <Position X="4.75" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AEc0ARAAFAQEAAAgAAASBYAAAACAAEAAAARCAAAAISA=</HashCode>
+      <FileName>JKU.Coco\Scanner.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="at.jku.ssw.Coco.Position" Collapsed="true">
+    <Position X="3" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAACAAAAAAAAAAAAAwAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>JKU.Coco\Tab.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="at.jku.ssw.Coco.Symbol" Collapsed="true">
+    <Position X="10" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAFCQACCgAAAAAAACAEAAAAACAAEBAACEQAAAQAAQAA=</HashCode>
+      <FileName>JKU.Coco\Tab.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="at.jku.ssw.Coco.Node" Collapsed="true">
+    <Position X="6.5" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEABKAAAIACIAFACAQAAIAAIACAAQBGEQYKAgKABAA=</HashCode>
+      <FileName>JKU.Coco\Tab.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="at.jku.ssw.Coco.Graph" Collapsed="true">
+    <Position X="3" Y="2.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAABAAAAAAA=</HashCode>
+      <FileName>JKU.Coco\Tab.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="at.jku.ssw.Coco.Sets" Collapsed="true">
+    <Position X="6.5" Y="3.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAgAAWAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>JKU.Coco\Tab.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="at.jku.ssw.Coco.CharClass" Collapsed="true">
+    <Position X="4.75" Y="0.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAQAAAAAAAAEAAAAEAAAAAAAAAA=</HashCode>
+      <FileName>JKU.Coco\Tab.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="at.jku.ssw.Coco.Tab" Collapsed="true">
+    <Position X="3" Y="4.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ckDBAQIIUeMJCSJRCC+CADQA15yotEULwDsCYEIoKCw=</HashCode>
+      <FileName>JKU.Coco\Tab.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

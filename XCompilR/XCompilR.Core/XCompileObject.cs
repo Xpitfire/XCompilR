@@ -22,7 +22,7 @@ namespace XCompilR.Core
             _properties[binder.Name] = value;
             return true;
         }
-
+        
         protected XCompileObject()
         {
             var attributeArray = (XCompileAttribute[])GetType().GetCustomAttributes(typeof(XCompileAttribute), false);

@@ -17,7 +17,7 @@ namespace XCompilR.IntelliSense
     [Name("token completion handler")]
     [ContentType("plaintext")]
     [TextViewRole(PredefinedTextViewRoles.Editable)]
-    internal class XCompileCompletionHandlerProvider : IVsTextViewCreationListener
+    internal class TestCompletionHandlerProvider : IVsTextViewCreationListener
     {
         [Import]
         internal IVsEditorAdaptersFactoryService AdapterService = null;
@@ -32,7 +32,7 @@ namespace XCompilR.IntelliSense
             if (textView == null)
                 return;
 
-            Func<XCompileCompletionCommandHandler> createCommandHandler = delegate () { return new XCompileCompletionCommandHandler(textViewAdapter, textView, this); };
+            Func<TestCompletionCommandHandler> createCommandHandler = delegate () { return new TestCompletionCommandHandler(textViewAdapter, textView, this); };
             textView.Properties.GetOrCreateSingletonProperty(createCommandHandler);
         }
     }

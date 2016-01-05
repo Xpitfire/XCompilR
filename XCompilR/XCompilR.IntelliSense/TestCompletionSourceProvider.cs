@@ -13,18 +13,19 @@ namespace XCompilR.IntelliSense
 {
     /// <summary>
     /// Tutorial: https://msdn.microsoft.com/en-us/library/ee372314.aspx
+    /// http://stackoverflow.com/questions/9133887/how-to-extend-intellisense-items
     /// </summary>
     [Export(typeof(ICompletionSourceProvider))]
     [ContentType("plaintext")]
     [Name("token completion")]
-    public class XCompileCompletionSourceProvider : ICompletionSourceProvider
+    public class TestCompletionSourceProvider : ICompletionSourceProvider
     {
         [Import]
         internal ITextStructureNavigatorSelectorService NavigatorService { get; set; }
 
         public ICompletionSource TryCreateCompletionSource(ITextBuffer textBuffer)
         {
-            return new XCompileCompletionSource(this, textBuffer);
+            return new TestCompletionSource(this, textBuffer);
         }
     }
 }

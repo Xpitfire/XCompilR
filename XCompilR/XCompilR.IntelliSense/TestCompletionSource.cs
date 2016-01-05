@@ -11,13 +11,13 @@ using Microsoft.VisualStudio.Text.Operations;
 namespace XCompilR.IntelliSense
 {
     
-    public class XCompileCompletionSource : ICompletionSource
+    public class TestCompletionSource : ICompletionSource
     {
-        private readonly XCompileCompletionSourceProvider _sourceProvider;
+        private readonly TestCompletionSourceProvider _sourceProvider;
         private readonly ITextBuffer _textBuffer;
         private List<Completion> _compList;
 
-        public XCompileCompletionSource(XCompileCompletionSourceProvider sourceProvider, ITextBuffer textBuffer)
+        public TestCompletionSource(TestCompletionSourceProvider sourceProvider, ITextBuffer textBuffer)
         {
             _sourceProvider = sourceProvider;
             _textBuffer = textBuffer;

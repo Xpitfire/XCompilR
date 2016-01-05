@@ -1,14 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.Contracts;
-using System.Dynamic;
-using System.Linq;
+using System.IO;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using Pseudo.Net.Backend;
-using Pseudo.Net.Backend.Roslyn;
+using Roslyn.Compilers;
+using Roslyn.Compilers.CSharp;
 
 namespace XCompilR.Core
 {
@@ -41,16 +37,29 @@ namespace XCompilR.Core
 
             var parser = Language.Parser;
             parser.BindingObject = bindingObj;
+            parser.BindingObjectMembers = bindingObj;
             parser.Parse(Source);
 
-            // TODO: change from code *.cs code writer to Roslyn in-memory objects.
-            if (parser.ProgramRoot != null)
+            // Creates the copimlation of a dll for the syntax tree received from the parser, 
+            // adding references at runtime including metadata reference of System library
+            var compilation = Compilation.Create(
+                $"{Language.AssemblyName}.dll", 
+                new CompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+                references: new[] {new MetadataFileReference(typeof (object).Assembly.Location)},
+                syntaxTrees: new[] {parser.CompilationUnitSyntax.SyntaxTree}
+                );
+
+            // Here the compiled code is emitted into memory stream which is used to create a assembly at runtime 
+            Assembly assembly;
+            using (var stream = new MemoryStream())
             {
-                BaseGenerator generator = new RoslynGenerator(
-                    parser.ProgramRoot,
-                    msg => Debug.WriteLine($"RoslynGenerator error: {msg}"));
-                generator.Generate(Language.AssemblyName + ".cs", Target.CS);
+                compilation.Emit(stream);
+                assembly = Assembly.Load(stream.GetBuffer());
             }
+            
+            // Adding the new assembly to the dynamic object instance
+            IDictionary<string, object> bindingObjProperties = bindingObj;
+            bindingObjProperties.Add(Language.AssemblyName, assembly);
         }
     }
 }

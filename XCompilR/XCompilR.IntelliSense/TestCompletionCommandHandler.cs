@@ -14,14 +14,14 @@ using Microsoft.VisualStudio.TextManager.Interop;
 
 namespace XCompilR.IntelliSense
 {
-    internal class XCompileCompletionCommandHandler : IOleCommandTarget
+    internal class TestCompletionCommandHandler : IOleCommandTarget
     {
         private IOleCommandTarget _nextCommandHandler;
         private ITextView _textView;
-        private XCompileCompletionHandlerProvider _provider;
+        private TestCompletionHandlerProvider _provider;
         private ICompletionSession _session;
 
-        internal XCompileCompletionCommandHandler(IVsTextView textViewAdapter, ITextView textView, XCompileCompletionHandlerProvider provider)
+        internal TestCompletionCommandHandler(IVsTextView textViewAdapter, ITextView textView, TestCompletionHandlerProvider provider)
         {
             this._textView = textView;
             this._provider = provider;

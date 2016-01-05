@@ -245,7 +245,6 @@ private bool NextTokenIsMembersOf(ExpressionNode n){
 	
 	void PSEUDO() {
         pp = new SyntaxTreeBuilder();
-	    ProgramRoot = pp.ProgramRoot;
 		string name;
 		StatementNode n;                           
 		Expect(16);
