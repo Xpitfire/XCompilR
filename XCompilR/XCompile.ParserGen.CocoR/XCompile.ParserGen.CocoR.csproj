@@ -63,6 +63,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BindingParserGen.cs" />
     <Compile Include="JKU.Coco\Coco.cs" />
     <Compile Include="JKU.Coco\DFA.cs" />
     <Compile Include="JKU.Coco\Parser.cs" />

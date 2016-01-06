@@ -46,6 +46,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ABindingParserGen.cs" />
     <Compile Include="IParserGen.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
