@@ -76,19 +76,20 @@ namespace XCompile.ParserGen.CocoR
         }
 
         [LogException]
+        [XCompilRExceptionHandler(typeof(XCompileException))]
         public AParser CreateParser(string srcName)
         {
             try
             {
+                // load available assembly
                 string nsName = $"XCompilR.{srcName.Split('.')[0]}";
                 Assembly assembly = LoadAssembly(srcName, nsName);
 
+                // create and initialize Parser and Scanner
                 Type type = assembly.GetType(nsName + ".Scanner");
                 var s = (AScanner)Activator.CreateInstance(type);
-
                 type = assembly.GetType(nsName + ".Parser");
                 var p = (AParser)Activator.CreateInstance(type);
-
                 p.InitParser(s);
                 return p;
             }
@@ -97,6 +98,11 @@ namespace XCompile.ParserGen.CocoR
                 throw new XCompileException("Could not generate Parser and Scanner from grammar file!", exception);
             }
         }
-        
+
+        public Assembly GenerateAssembly(string grammarFile)
+        {
+            // TODO build a Visual Studio extension and implement the runtime triggered parser generation
+            throw new NotImplementedException();
+        }
     }
 }

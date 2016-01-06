@@ -53,6 +53,7 @@ namespace XCompilR.Core
 
         protected XCompileObject()
         {
+            // verify if the XCompileAttribute is available
             var attributeArray = (XCompileAttribute[])GetType().GetCustomAttributes(typeof(XCompileAttribute), false);
 
             if (attributeArray.Length != 1)
@@ -60,8 +61,8 @@ namespace XCompilR.Core
                 throw new XCompileException("Invalid attribute notation on target class!");
             }
 
-            var attribute = attributeArray[0];
-            attribute.BindMembers(this);
+            // commit this object for binding
+            attributeArray[0].BindMembers(this);
         }
     }
 }

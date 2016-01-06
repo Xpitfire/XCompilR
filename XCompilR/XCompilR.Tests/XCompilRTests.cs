@@ -10,13 +10,13 @@ namespace XCompilR.Tests
     public class XCompilRTests
     {
         
-        [XCompile("XCompilR.JavaScript", "test.js", "Test", "Demo")]
-        private class DemoJavaScript : XCompileObject { }
+        [XCompile("XCompilR.JavaScript", "test.js", TargetMainClass = "Test", TargetNamespace = "Demo")]
+        private class DemoBinding : XCompileObject { }
 
         [TestMethod]
         public void TestDynamicObject()
         {
-            dynamic d = new DemoJavaScript();
+            dynamic d = new DemoBinding();
             Assert.IsTrue(int.Parse(d.Ident) == 5);
         }
         
